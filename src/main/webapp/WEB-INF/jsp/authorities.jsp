@@ -16,7 +16,7 @@
         <h1>Authentication required</h1>
         <p>Please choose an authority to login:</p><br>
     <c:forEach var="entry" items="${authorities}">
-        <a href="getToken/${entry.value}">${entry.key}</a>
+        <a href="${entry.value}">${entry.key}</a>
     </c:forEach>
 
 </body>

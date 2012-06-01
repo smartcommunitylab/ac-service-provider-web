@@ -142,7 +142,8 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
-            <plugin>
+            <!-- Uncomment to regenerate the jaxbmodel classes from the schema -->
+            <!--plugin>
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
                 <artifactId>maven-jaxb2-plugin</artifactId>
                 <executions>
@@ -167,7 +168,7 @@
                     <generateDirectory>${project.build.directory}/generated-sources/xjc</generateDirectory>
                     <verbose>true</verbose>
                 </configuration>
-            </plugin>
+            </plugin-->
             <plugin>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>maven-jetty-plugin</artifactId>
