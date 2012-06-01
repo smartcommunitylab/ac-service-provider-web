@@ -80,6 +80,8 @@ public class AcServiceAdapter {
             list.add(a);
         }
         List<User> users = service.getUsersByAttributes(list);
+        if(users==null)
+            users=new ArrayList();
         if (users.size() > 1) {
             throw new IllegalArgumentException(
                     "The request attributes identify more than one user");
