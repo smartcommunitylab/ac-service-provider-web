@@ -8,8 +8,13 @@ import eu.trentorise.smartcampus.ac.provider.AcProviderService;
 import eu.trentorise.smartcampus.ac.provider.model.Attribute;
 import eu.trentorise.smartcampus.ac.provider.model.Authority;
 import eu.trentorise.smartcampus.ac.provider.model.User;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.bind.JAXBException;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
@@ -34,7 +39,7 @@ public class AcServiceAdapter {
     private AcProviderService service;
 
     @PostConstruct
-    private void init() {
+    private void init() throws JAXBException {
         JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
         factory.setServiceClass(AcProviderService.class);
         factory.setAddress(endpointUrl);
@@ -50,14 +55,17 @@ public class AcServiceAdapter {
             policy.setAllowChunking(false);
             conduit.setClient(policy);
         }
+        attrAdapter.init();
     }
 
-    public String updateUser(String authority, Map<String, String> attributes) {
-        Authority auth = service.getAuthority(authority);
+    public String updateUser(String authorityUrl, HttpServletRequest req) {
+        Authority auth = service.getAuthorityByUrl(authorityUrl);
         if (auth == null) {
-            throw new IllegalArgumentException("Unknown authority: " + authority);
+            throw new IllegalArgumentException("Unknown authority URL: " + authorityUrl);
         }
-        List<String> ids = attrAdapter.getIdentifyingAttributes(authority);
+        Map<String, String> attributes=attrAdapter.getAttributes(auth.getName(),
+                req);
+        List<String> ids = attrAdapter.getIdentifyingAttributes(auth.getName());
         // Try to find an already existing user
         List<Attribute> list = new ArrayList<Attribute>();
         for (String key : ids) {
@@ -100,13 +108,22 @@ public class AcServiceAdapter {
     public boolean deleteToken(String token) {
         return service.removeUser(token);
     }
+
     
-    public Map<String,String> getAuthorities(){
-        Collection<Authority> list=service.getAuthorities();
-        Map<String,String> map=new HashMap<String,String>();
-        for(Authority auth:list){
-            map.put(auth.getName(),auth.getRedirectUrl());
-        }
-        return map;
+    
+    protected Authority getAuthorityByName(String name){
+        return service.getAuthorityByName(name);
+    }
+    
+    protected Authority getAuthorityByUrl(String url){
+        return service.getAuthorityByUrl(url);
+    }
+    
+    protected void createAuthority(Authority auth){
+        service.createAuthority(auth);
+    }
+    
+    protected Collection<Authority> getAuthorities(){
+        return service.getAuthorities();
     }
 }
