@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF8" standalone="yes"?>
+<?xml version="1.0" standalone="yes"?>
 <authorities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="XMLSchema4.xsd">
     <authorityMapping name="Shibboleth" url="shibboleth">
