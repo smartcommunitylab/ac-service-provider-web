@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import eu.trentorise.smartcampus.ac.provider.AcServiceException;
 import eu.trentorise.smartcampus.ac.provider.adapters.AcServiceAdapter;
 import eu.trentorise.smartcampus.ac.provider.adapters.AttributesAdapter;
 
@@ -79,7 +80,7 @@ public class AcSpWeb {
 
 	@RequestMapping(method = RequestMethod.GET, value = "/getToken/{authorityUrl}")
     public String getToken(@PathVariable("authorityUrl") String authorityUrl,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws AcServiceException {
     	// FOR TESTING PURPOSES
     	if (request.getParameter("TESTING") != null || request.getSession().getAttribute("TESTING") != null) {
     		request.getSession().setAttribute("TESTING", true);
@@ -110,7 +111,7 @@ public class AcSpWeb {
 
     @RequestMapping(method = RequestMethod.DELETE,
     value = "/invalidateToken/{token}")
-    public void deleteToken(@RequestParam("token") String token) {
+    public void deleteToken(@RequestParam("token") String token) throws AcServiceException {
         service.deleteToken(token);
     }
 

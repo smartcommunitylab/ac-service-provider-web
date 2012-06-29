@@ -4,6 +4,7 @@
  */
 package eu.trentorise.smartcampus.ac.provider.adapters;
 
+import eu.trentorise.smartcampus.ac.provider.AcServiceException;
 import eu.trentorise.smartcampus.ac.provider.jaxbmodel.Authorities;
 import eu.trentorise.smartcampus.ac.provider.jaxbmodel.AuthorityMapping;
 import eu.trentorise.smartcampus.ac.provider.model.Authority;
@@ -31,7 +32,7 @@ public class AttributesAdapter {
     private Map<String, AuthorityMapping> authorities;
 
     // Called from the AcServiceAdapter's init
-    protected void init() throws JAXBException {
+    protected void init() throws JAXBException, AcServiceException {
         JAXBContext jaxb = JAXBContext.newInstance(AuthorityMapping.class,
                 Authorities.class);
         Unmarshaller unm = jaxb.createUnmarshaller();

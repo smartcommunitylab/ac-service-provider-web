@@ -5,6 +5,7 @@
 package eu.trentorise.smartcampus.ac.provider.adapters;
 
 import eu.trentorise.smartcampus.ac.provider.AcProviderService;
+import eu.trentorise.smartcampus.ac.provider.AcServiceException;
 import eu.trentorise.smartcampus.ac.provider.model.Attribute;
 import eu.trentorise.smartcampus.ac.provider.model.Authority;
 import eu.trentorise.smartcampus.ac.provider.model.User;
@@ -39,7 +40,7 @@ public class AcServiceAdapter {
     private AcProviderService service;
 
     @PostConstruct
-    private void init() throws JAXBException {
+    private void init() throws JAXBException, AcServiceException {
         JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
         factory.setServiceClass(AcProviderService.class);
         factory.setAddress(endpointUrl);
@@ -58,7 +59,7 @@ public class AcServiceAdapter {
         attrAdapter.init();
     }
 
-    public String updateUser(String authorityUrl, HttpServletRequest req) {
+    public String updateUser(String authorityUrl, HttpServletRequest req) throws AcServiceException {
         Authority auth = service.getAuthorityByUrl(authorityUrl);
         if (auth == null) {
             throw new IllegalArgumentException("Unknown authority URL: " + authorityUrl);
@@ -107,25 +108,25 @@ public class AcServiceAdapter {
         return token;
     }
 
-    public boolean deleteToken(String token) {
+    public boolean deleteToken(String token) throws AcServiceException {
         return service.removeUser(token);
     }
 
     
     
-    protected Authority getAuthorityByName(String name){
+    protected Authority getAuthorityByName(String name) throws AcServiceException{
         return service.getAuthorityByName(name);
     }
     
-    protected Authority getAuthorityByUrl(String url){
+    protected Authority getAuthorityByUrl(String url) throws AcServiceException{
         return service.getAuthorityByUrl(url);
     }
     
-    protected void createAuthority(Authority auth){
+    protected void createAuthority(Authority auth) throws AcServiceException{
         service.createAuthority(auth);
     }
     
-    protected Collection<Authority> getAuthorities(){
+    protected Collection<Authority> getAuthorities() throws AcServiceException{
         return service.getAuthorities();
     }
 }
