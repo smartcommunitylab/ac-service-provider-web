@@ -1,0 +1,49 @@
+@charset "UTF-8";
+
+body {
+	width: 100%;
+	height: 100%;
+	font-family: "lucida grande", tahoma, arial, sans-serif;
+	/* verdana */
+	color: #ffffff;
+	background-image: url('../img/ls_background.png');
+	background-repeat: no-repeat;
+	background-size: 100% auto;
+	background-color: silver;
+	margin: 0 auto;
+	text-align: center;
+	background-color: silver;
+	font-family: "lucida grande", tahoma, arial, sans-serif;
+}
+
+ul {
+	margin: 0 auto;
+	padding: 0;
+	list-style-type: none;
+	width: 50%;
+}
+
+ul li {
+	background-color: #666666;
+	padding: 15%;
+	margin: 10%;
+}
+
+ul li a {
+	color: #ffffff;
+	text-decoration: none;
+	font-size: larger;
+}
+
+img.logo {
+	float: right;
+	padding: 5% 5% 0 0;
+}
+
+div.authorities {
+	margin-top: 20%;
+}
+
+.clear {
+	clear: both;
+}
