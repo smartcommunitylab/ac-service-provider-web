@@ -96,14 +96,15 @@ public class AcServiceAdapter {
             attr.setValue(value);
             list.add(attr);
         }
-        String token = service.generateAuthToken();
+        String token = null;
         if (users.isEmpty()) {
-
+            token = service.generateAuthToken();
             service.createUser(token, System.currentTimeMillis() + DAY, list);
         } else {
             User user = users.get(0);
             service.updateUser(user.getId(), token,
                     System.currentTimeMillis() + DAY, list);
+            token = user.getAuthToken();
         }
         return token;
     }
