@@ -1,7 +1,19 @@
 <?xml version="1.0" standalone="yes"?>
 <authorities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="XMLSchema4.xsd">
-    <authorityMapping name="Shibboleth" url="shibboleth">
+    <authorityMapping name="unitn" url="unitn">
+        <attributes>Shib-Session-ID</attributes>
+        <attributes>Shib-Session-Index</attributes>
+        <attributes>Shib-Identity-Provider</attributes>
+        <attributes>Shib-Authentication-Method</attributes>
+        <attributes>Shib-Authentication-Instant</attributes>
+        <attributes>Shib-AuthnContext-Class</attributes>
+        <attributes>Shib-AuthnContext-Decl</attributes>
+        <attributes>Shib-Assertion-Count</attributes>
+        <attributes>Shib-Application-ID</attributes>
+        <identifyingAttributes>idada</identifyingAttributes>
+    </authorityMapping>
+    <authorityMapping name="fbk" url="fbk">
         <attributes>Shib-Session-ID</attributes>
         <attributes>Shib-Session-Index</attributes>
         <attributes>Shib-Identity-Provider</attributes>
@@ -12,5 +24,9 @@
         <attributes>Shib-Assertion-Count</attributes>
         <attributes>Shib-Application-ID</attributes>
         <identifyingAttributes>eppn</identifyingAttributes>
+        
+        <!-- fake attributes to test alias  -->
+        <attributes alias="eu.trentorise.smartcampus.givenname">Shib-name</attributes>
+        <attributes alias="eu.trentorise.smartcampus.surname">Shib-surname</attributes>
     </authorityMapping>
 </authorities>

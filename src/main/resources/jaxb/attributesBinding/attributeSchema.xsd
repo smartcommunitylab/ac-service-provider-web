@@ -1,30 +1,34 @@
 <?xml version="1.0"?>
-<!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
--->
+<!-- To change this template, choose Tools | Templates and open the template 
+	in the editor. -->
 
-<xsd:schema version="1.0"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            elementFormDefault="qualified">
-    <xsd:element name="authorities" type="authorities"/>
-    <xsd:complexType name="authorities">
-        <xsd:sequence>
-            <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                <xsd:element name="authorityMapping" type="authorityMapping"/>
-            </xsd:choice>
-        </xsd:sequence>
-    </xsd:complexType>
-    <xsd:complexType name="authorityMapping">
-        <xsd:sequence>
-            <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                <xsd:element name="attributes" type="xsd:string"/>
-            </xsd:choice>
-            <xsd:choice minOccurs="1" maxOccurs="unbounded">
-                <xsd:element name="identifyingAttributes" type="xsd:string"/>
-            </xsd:choice>
-        </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string"  use="required"/>
-        <xsd:attribute name="url" type="xsd:string"  use="required"/>
-    </xsd:complexType>
+<xsd:schema version="1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified">
+	<xsd:element name="authorities" type="authorities" />
+	<xsd:complexType name="authorities">
+		<xsd:sequence>
+			<xsd:choice minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="authorityMapping" type="authorityMapping" />
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="authorityMapping">
+		<xsd:sequence>
+			<xsd:choice minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="attributes" type="attributes" />
+			</xsd:choice>
+			<xsd:choice minOccurs="1" maxOccurs="unbounded">
+				<xsd:element name="identifyingAttributes" type="xsd:string" />
+			</xsd:choice>
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string" use="required" />
+		<xsd:attribute name="url" type="xsd:string" use="required" />
+	</xsd:complexType>
+	<xsd:complexType name="attributes">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="alias" type="xsd:string" use="optional" />
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
 </xsd:schema>
