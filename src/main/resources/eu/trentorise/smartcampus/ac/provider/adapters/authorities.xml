@@ -23,10 +23,8 @@
         <attributes>Shib-AuthnContext-Decl</attributes>
         <attributes>Shib-Assertion-Count</attributes>
         <attributes>Shib-Application-ID</attributes>
+        <attributes alias="eu.trentorise.smartcampus.givenname">AJP_cn</attributes>
+        <attributes alias="eu.trentorise.smartcampus.surname">AJP_sn</attributes>
         <identifyingAttributes>eppn</identifyingAttributes>
-        
-        <!-- fake attributes to test alias  -->
-        <attributes alias="eu.trentorise.smartcampus.givenname">Shib-name</attributes>
-        <attributes alias="eu.trentorise.smartcampus.surname">Shib-surname</attributes>
     </authorityMapping>
 </authorities>
