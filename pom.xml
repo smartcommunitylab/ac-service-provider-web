@@ -182,5 +182,6 @@
             </plugin>
             
         </plugins>
+        <finalName>ac-service-provider-web</finalName>
     </build>
 </project>
