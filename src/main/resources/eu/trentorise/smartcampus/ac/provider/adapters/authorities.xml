@@ -11,8 +11,8 @@
 		<attributes>Shib-AuthnContext-Decl</attributes>
 		<attributes>Shib-Assertion-Count</attributes>
 		<attributes>Shib-Application-ID</attributes>
-		<attributes alias="eu.trentorise.smartcampus.givenname">AJP_givenName</attributes>
-		<attributes alias="eu.trentorise.smartcampus.surname">AJP_sn</attributes>
+		<attributes alias="eu.trentorise.smartcampus.givenname">givenName</attributes>
+		<attributes alias="eu.trentorise.smartcampus.surname">sn</attributes>
 		<identifyingAttributes>idada</identifyingAttributes>
 	</authorityMapping>
 	<authorityMapping name="fbk" url="fbk">
@@ -25,8 +25,8 @@
 		<attributes>Shib-AuthnContext-Decl</attributes>
 		<attributes>Shib-Assertion-Count</attributes>
 		<attributes>Shib-Application-ID</attributes>
-		<attributes alias="eu.trentorise.smartcampus.givenname">AJP_cn</attributes>
-		<attributes alias="eu.trentorise.smartcampus.surname">AJP_sn</attributes>
+		<attributes alias="eu.trentorise.smartcampus.givenname">cn</attributes>
+		<attributes alias="eu.trentorise.smartcampus.surname">sn</attributes>
 		<identifyingAttributes>eppn</identifyingAttributes>
 	</authorityMapping>
 </authorities>
