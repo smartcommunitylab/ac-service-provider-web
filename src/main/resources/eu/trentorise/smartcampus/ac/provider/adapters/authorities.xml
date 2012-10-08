@@ -25,7 +25,7 @@
 		<attributes>Shib-AuthnContext-Decl</attributes>
 		<attributes>Shib-Assertion-Count</attributes>
 		<attributes>Shib-Application-ID</attributes>
-		<attributes alias="eu.trentorise.smartcampus.givenname">cn</attributes>
+		<attributes alias="eu.trentorise.smartcampus.givenname">givenName</attributes>
 		<attributes alias="eu.trentorise.smartcampus.surname">sn</attributes>
 		<identifyingAttributes>eppn</identifyingAttributes>
 	</authorityMapping>
