@@ -101,7 +101,7 @@ public class AcSpWeb {
 					// set some values to test alias
 
 					// attribute with alias : see authorities.xml FBK authority
-					request.setAttribute("AJP_cn", "dummyvalue");
+					request.setAttribute("givenName", "dummyvalue");
 
 					request.setAttribute("Shib-Application-ID", "dummyvalue");
 

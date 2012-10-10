@@ -119,7 +119,6 @@ public class AcServiceAdapter {
 				expirationDate = System.currentTimeMillis() + TOKEN_DEADLINE;
 			}
 			service.updateUser(user.getId(), token, expirationDate, list);
-			// token = user.getAuthToken();
 		}
 		return token;
 	}
