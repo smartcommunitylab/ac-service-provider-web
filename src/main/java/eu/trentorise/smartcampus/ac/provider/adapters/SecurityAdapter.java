@@ -25,9 +25,9 @@ public class SecurityAdapter {
 	// @PostConstruct
 	protected void init() throws IOException {
 		securityMap = new HashMap<String, List<SecurityEntry>>();
-		List<SecurityEntry> securityEntries = new ArrayList<SecurityEntry>();
 		Set<String> authNames = attrAdapter.getAuthorityUrls().keySet();
 		for (String authName : authNames) {
+			List<SecurityEntry> securityEntries = new ArrayList<SecurityEntry>();
 			InputStream in = getClass().getClassLoader().getResourceAsStream(
 					authName + "-whitelist.txt");
 			if (in != null) {
