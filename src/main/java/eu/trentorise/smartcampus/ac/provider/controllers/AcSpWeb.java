@@ -85,7 +85,8 @@ public class AcSpWeb {
 
 	@RequestMapping(method = RequestMethod.GET, value = "/getToken/{authorityUrl}")
 	public String getToken(@PathVariable("authorityUrl") String authorityUrl,
-			HttpServletRequest request) throws AcServiceException {
+			HttpServletRequest request, HttpServletResponse response)
+			throws AcServiceException, IOException {
 		// FOR TESTING PURPOSES
 		if (request.getParameter("TESTING") != null
 				|| request.getSession().getAttribute("TESTING") != null) {
@@ -96,12 +97,12 @@ public class AcSpWeb {
 					List<String> attrs = attrAdapter
 							.getIdentifyingAttributes(name);
 					for (String a : attrs) {
-						request.setAttribute(a, "dummyvalue");
+						request.setAttribute(a, "sc-user");
 					}
 					// set some values to test alias
 
 					// attribute with alias : see authorities.xml FBK authority
-					request.setAttribute("givenName", "dummyvalue");
+					request.setAttribute("givenName", "sc");
 
 					request.setAttribute("Shib-Application-ID", "dummyvalue");
 
@@ -119,8 +120,13 @@ public class AcSpWeb {
 			}
 			target = redirect;
 		}
-
-		String token = service.updateUser(authorityUrl, request);
+		String token = "";
+		try {
+			token = service.updateUser(authorityUrl, request);
+		} catch (SecurityException e) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			target = "/ac/denied";
+		}
 		return "redirect:" + target + "#" + token;
 	}
 
@@ -134,10 +140,13 @@ public class AcSpWeb {
 	public void success() {
 	}
 
+	@RequestMapping("/denied")
+	public void denied() {
+	}
+
 	@ExceptionHandler(IllegalArgumentException.class)
 	public void badRequest(IllegalArgumentException ex, HttpServletResponse resp)
 			throws IOException {
 		resp.sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
 	}
-
 }

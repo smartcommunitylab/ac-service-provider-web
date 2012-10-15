@@ -1,0 +1,5 @@
+# this is a comment
+
+name1,surname1
+sc  ,user  ,eppn  ,sc-user      
+name2,surname2,eppn,unique2

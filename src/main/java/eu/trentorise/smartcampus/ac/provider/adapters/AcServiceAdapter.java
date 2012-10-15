@@ -4,6 +4,7 @@
  */
 package eu.trentorise.smartcampus.ac.provider.adapters;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -44,8 +45,11 @@ public class AcServiceAdapter {
 	private AttributesAdapter attrAdapter;
 	private AcProviderService service;
 
+	@Autowired
+	private SecurityAdapter secAdapter;
+
 	@PostConstruct
-	private void init() throws JAXBException, AcServiceException {
+	private void init() throws JAXBException, AcServiceException, IOException {
 		JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
 		factory.setServiceClass(AcProviderService.class);
 		factory.setAddress(endpointUrl);
@@ -62,6 +66,7 @@ public class AcServiceAdapter {
 			conduit.setClient(policy);
 		}
 		attrAdapter.init();
+		secAdapter.init();
 	}
 
 	public String updateUser(String authorityUrl, HttpServletRequest req)
@@ -105,6 +110,12 @@ public class AcServiceAdapter {
 		}
 		String token = null;
 		Long expirationDate = null;
+
+		// add security whitelist
+		if (!secAdapter.access(auth.getName(), ids, attributes)) {
+			throw new SecurityException("Access denied to user");
+		}
+
 		if (users.isEmpty()) {
 			token = service.generateAuthToken();
 			service.createUser(token, System.currentTimeMillis()
