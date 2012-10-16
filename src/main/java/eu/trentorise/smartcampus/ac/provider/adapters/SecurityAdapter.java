@@ -5,24 +5,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SecurityAdapter {
 
+	private static final Logger logger = Logger
+			.getLogger(SecurityAdapter.class);
 	private static final String NAME_ATTR = "eu.trentorise.smartcampus.givenname";
 	private static final String SURNAME_ATTR = "eu.trentorise.smartcampus.surname";
 	@Autowired
 	AttributesAdapter attrAdapter;
 	Map<String, List<SecurityEntry>> securityMap;
 
-	// @PostConstruct
 	protected void init() throws IOException {
 		securityMap = new HashMap<String, List<SecurityEntry>>();
 		Set<String> authNames = attrAdapter.getAuthorityUrls().keySet();
@@ -63,11 +66,10 @@ public class SecurityAdapter {
 		}
 	}
 
-	public boolean access(String authName, List<String> idAttrs,
+	public boolean access(String authName, List<String> checkAttrs,
 			Map<String, String> attrs) {
 		List<SecurityEntry> securityList = securityMap.get(authName);
 
-		boolean access = true;
 		boolean idAttrCheck = false;
 		boolean nameCheck = false;
 		if (securityList != null) {
@@ -85,11 +87,17 @@ public class SecurityAdapter {
 				}
 
 				// check id attrs
+
+				// security entry MUST only valid key attribute
+				boolean access = !Collections.disjoint(checkAttrs, se
+						.getIdSecurityEntries().keySet());
 				if (!idAttrCheck && !se.getIdSecurityEntries().isEmpty()) {
-					for (String idAttr : idAttrs) {
+					for (String idAttr : checkAttrs) {
 						try {
-							access &= attrs.get(idAttr).equals(
-									se.getIdSecurityEntries().get(idAttr));
+							if (se.getIdSecurityEntries().get(idAttr) != null) {
+								access &= attrs.get(idAttr).equals(
+										se.getIdSecurityEntries().get(idAttr));
+							}
 						} catch (NullPointerException e) {
 							access = false;
 						}
@@ -107,7 +115,15 @@ public class SecurityAdapter {
 		} else {
 			return true;
 		}
-
+		if (!(idAttrCheck || nameCheck)) {
+			String attrValues = "";
+			for (String attrKey : checkAttrs) {
+				attrValues += attrKey + " -> " + attrs.get(attrKey) + " ";
+			}
+			logger.warn("Authentication failed. User: givenname -> "
+					+ attrs.get(NAME_ATTR) + " surname -> "
+					+ attrs.get(SURNAME_ATTR) + " " + attrValues);
+		}
 		return idAttrCheck || nameCheck;
 	}
 }

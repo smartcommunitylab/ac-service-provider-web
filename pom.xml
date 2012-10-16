@@ -39,6 +39,7 @@
 			<scope>test</scope>
 		</dependency>
 		
+		
 		<!-- Spring -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -98,31 +99,37 @@
             <version>6.1.24</version>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency> 
+        	<groupId>log4j</groupId>
+        	<artifactId>log4j</artifactId>
+        	<version>1.2.17</version>
+        </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>sc-releases</id>
-            <name>Smartcampus releases repo</name>
-            <url>http://213.21.154.86/nexus/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>sc-snapshots</id>
-            <name>Smartcampus snapshots repo</name>
-            <url>http://213.21.154.86/nexus/content/repositories/snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+<!--     <repositories> -->
+<!--         <repository> -->
+<!--             <id>sc-releases</id> -->
+<!--             <name>Smartcampus releases repo</name> -->
+<!--             <url>http://213.21.154.86/nexus/content/repositories/releases/</url> -->
+<!--             <releases> -->
+<!--                 <enabled>true</enabled> -->
+<!--             </releases> -->
+<!--             <snapshots> -->
+<!--                 <enabled>false</enabled> -->
+<!--             </snapshots> -->
+<!--         </repository> -->
+<!--         <repository> -->
+<!--             <id>sc-snapshots</id> -->
+<!--             <name>Smartcampus snapshots repo</name> -->
+<!--             <url>http://213.21.154.86/nexus/content/repositories/snapshots/</url> -->
+<!--             <releases> -->
+<!--                 <enabled>false</enabled> -->
+<!--             </releases> -->
+<!--             <snapshots> -->
+<!--                 <enabled>true</enabled> -->
+<!--             </snapshots> -->
+<!--         </repository> -->
+<!--     </repositories> -->
 
     <distributionManagement>
         <repository>

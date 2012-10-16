@@ -13,6 +13,7 @@
 		<attributes>Shib-Application-ID</attributes>
 		<attributes alias="eu.trentorise.smartcampus.givenname">givenName</attributes>
 		<attributes alias="eu.trentorise.smartcampus.surname">sn</attributes>
+		<attributes>mailAll</attributes>
 		<identifyingAttributes>idada</identifyingAttributes>
 	</authorityMapping>
 	<authorityMapping name="fbk" url="fbk">

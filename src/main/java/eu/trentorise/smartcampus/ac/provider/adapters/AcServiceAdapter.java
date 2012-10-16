@@ -112,7 +112,8 @@ public class AcServiceAdapter {
 		Long expirationDate = null;
 
 		// add security whitelist
-		if (!secAdapter.access(auth.getName(), ids, attributes)) {
+		if (!secAdapter.access(auth.getName(),
+				new ArrayList<String>(attributes.keySet()), attributes)) {
 			throw new SecurityException("Access denied to user");
 		}
 
