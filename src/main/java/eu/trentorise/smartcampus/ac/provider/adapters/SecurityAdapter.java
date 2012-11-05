@@ -1,9 +1,10 @@
 package eu.trentorise.smartcampus.ac.provider.adapters;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,18 +26,24 @@ public class SecurityAdapter {
 	private static final String SURNAME_ATTR = "eu.trentorise.smartcampus.surname";
 	@Autowired
 	AttributesAdapter attrAdapter;
-	Map<String, List<SecurityEntry>> securityMap;
+	private static Map<String, List<SecurityEntry>> securityMap;
 
-	protected void init() throws IOException {
-		securityMap = new HashMap<String, List<SecurityEntry>>();
+	// fixedRate is in ms
+	@Scheduled(fixedRate = 30000)
+	public void refreshSecurityList() throws IOException {
+		if (securityMap == null) {
+			securityMap = new HashMap<String, List<SecurityEntry>>();
+		} else {
+			securityMap.clear();
+		}
 		Set<String> authNames = attrAdapter.getAuthorityUrls().keySet();
 		for (String authName : authNames) {
 			List<SecurityEntry> securityEntries = new ArrayList<SecurityEntry>();
-			InputStream in = getClass().getClassLoader().getResourceAsStream(
+			URL fileUrl = getClass().getClassLoader().getResource(
 					authName + "-whitelist.txt");
-			if (in != null) {
+			if (fileUrl != null) {
 				BufferedReader bin = new BufferedReader(new InputStreamReader(
-						in));
+						new FileInputStream(fileUrl.getFile())));
 				String line = null;
 				while ((line = bin.readLine()) != null) {
 					line = line.trim();
@@ -55,15 +63,17 @@ public class SecurityAdapter {
 									idValues[i].trim());
 						}
 					}
-
 					securityEntries.add(se);
 				}
 				securityMap.put(authName, securityEntries);
 				bin.close();
-				in.close();
 			}
-
 		}
+		logger.info("Security list refreshed");
+	}
+
+	protected void init() throws IOException {
+		refreshSecurityList();
 	}
 
 	public boolean access(String authName, List<String> checkAttrs,
