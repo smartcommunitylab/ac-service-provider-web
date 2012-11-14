@@ -40,7 +40,7 @@
 		<ul>
 			<c:forEach var="entry" items="${authorities}">
 				<li><a
-					href="<%=request.getContextPath() %>/ac/getToken/${entry.value}?redirect=${redirect}">${entry.key}</a></li>
+					href="<%=request.getContextPath() %>/ac/getToken/${entry.value}?redirect=${redirect}${browser != null ? '&browser=' : ''}">${entry.key}</a></li>
 			</c:forEach>
 		</ul>
 	</div>
