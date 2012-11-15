@@ -13,6 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.owasp.esapi.errors.IntrusionException;
+import org.owasp.esapi.errors.ValidationException;
+import org.owasp.validator.html.PolicyException;
+import org.owasp.validator.html.ScanException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -26,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import eu.trentorise.smartcampus.ac.provider.AcServiceException;
 import eu.trentorise.smartcampus.ac.provider.adapters.AcServiceAdapter;
 import eu.trentorise.smartcampus.ac.provider.adapters.AttributesAdapter;
+import eu.trentorise.smartcampus.ac.provider.utils.Utils;
 
 /**
  * 
@@ -47,11 +52,16 @@ public class AcSpWeb {
 	@Value("${secure.cookies}")
 	private String secureCookies;
 
+	@Autowired
+	private Utils utility;
+
 	@RequestMapping(method = RequestMethod.GET, value = "/getToken")
 	public String showAuthorities(
 			Model model,
 			HttpServletRequest request,
-			@RequestParam(value = "browser", required = false) String browserRequest) {
+			@RequestParam(value = "browser", required = false) String browserRequest)
+			throws ValidationException, IntrusionException, ScanException,
+			PolicyException {
 		// FOR TESTING PURPOSES
 		if (request.getParameter("TESTING") != null) {
 			request.getSession().setAttribute("TESTING", true);
@@ -69,7 +79,7 @@ public class AcSpWeb {
 				throw new IllegalArgumentException("Incorrect redirect URL: "
 						+ redirect);
 			}
-			model.addAttribute("redirect", redirect);
+			model.addAttribute("redirect", utility.sanitize(redirect));
 		} else {
 			model.addAttribute("redirect", "");
 		}
