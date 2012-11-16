@@ -1,5 +1,8 @@
 package eu.trentorise.smartcampus.ac.provider.utils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import javax.annotation.PostConstruct;
 
 import org.owasp.esapi.ESAPI;
@@ -35,5 +38,13 @@ public class Utils {
 		s = encoder.canonicalize(s);
 		s = sanitizer.scan(s).getCleanHTML();
 		return s;
+	}
+
+	public String retrieveDomain(String url) throws MalformedURLException {
+		return retrieveDomain(new URL(url));
+	}
+
+	public String retrieveDomain(URL url) {
+		return url.getHost();
 	}
 }

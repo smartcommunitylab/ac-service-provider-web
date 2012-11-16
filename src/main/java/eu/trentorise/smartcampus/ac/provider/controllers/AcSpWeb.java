@@ -5,6 +5,7 @@
 package eu.trentorise.smartcampus.ac.provider.controllers;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Map;
 
@@ -51,9 +52,6 @@ public class AcSpWeb {
 
 	@Value("${secure.cookies}")
 	private String secureCookies;
-
-	@Value("${cookie.domain}")
-	private String cookieDomain;
 
 	@Autowired
 	private Utils utility;
@@ -175,7 +173,14 @@ public class AcSpWeb {
 
 		if (browserRequest != null) {
 			Cookie authCookie = new Cookie("auth_token", token);
-			authCookie.setDomain(cookieDomain.trim());
+			if (redirect != null && !redirect.isEmpty()) {
+				try {
+					String domain = utility.retrieveDomain(redirect);
+					authCookie.setDomain(domain);
+				} catch (MalformedURLException e) {
+					// do nothing
+				}
+			}
 			authCookie.setPath("/");
 			// cookie set secure only in production environment
 			if (isSecureCookiesEnvironment()) {
