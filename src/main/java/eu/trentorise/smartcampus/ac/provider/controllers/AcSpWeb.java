@@ -52,6 +52,9 @@ public class AcSpWeb {
 	@Value("${secure.cookies}")
 	private String secureCookies;
 
+	@Value("${cookie.domain}")
+	private String cookieDomain;
+
 	@Autowired
 	private Utils utility;
 
@@ -172,6 +175,7 @@ public class AcSpWeb {
 
 		if (browserRequest != null) {
 			Cookie authCookie = new Cookie("auth_token", token);
+			authCookie.setDomain(cookieDomain.trim());
 			authCookie.setPath("/");
 			// cookie set secure only in production environment
 			if (isSecureCookiesEnvironment()) {
