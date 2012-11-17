@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import eu.trentorise.smartcampus.ac.provider.AcServiceException;
 import eu.trentorise.smartcampus.ac.provider.adapters.AcServiceAdapter;
+import eu.trentorise.smartcampus.ac.provider.adapters.AccessCodeRepository;
 import eu.trentorise.smartcampus.ac.provider.adapters.AttributesAdapter;
 import eu.trentorise.smartcampus.ac.provider.utils.Utils;
 
@@ -54,13 +55,17 @@ public class AcSpWeb {
 	private String secureCookies;
 
 	@Autowired
+	private AccessCodeRepository codeRepository;
+	
+	@Autowired
 	private Utils utility;
 
 	@RequestMapping(method = RequestMethod.GET, value = "/getToken")
 	public String showAuthorities(
 			Model model,
 			HttpServletRequest request,
-			@RequestParam(value = "browser", required = false) String browserRequest)
+			@RequestParam(value = "browser", required = false) String browserRequest,
+			@RequestParam(value = "code", required = false) String codeRequest)
 			throws ValidationException, IntrusionException, ScanException,
 			PolicyException {
 		// FOR TESTING PURPOSES
@@ -70,6 +75,10 @@ public class AcSpWeb {
 		// used to attach browser parameter to getToken urls
 		if (browserRequest != null) {
 			model.addAttribute("browser", "");
+		}
+		// used to attach two-phase code parameter to getToken urls
+		if (codeRequest != null) {
+			model.addAttribute("code", "");
 		}
 		Map<String, String> authorities = attrAdapter.getAuthorityUrls();
 		model.addAttribute("authorities", authorities);
@@ -128,7 +137,8 @@ public class AcSpWeb {
 			@PathVariable("authorityUrl") String authorityUrl,
 			HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestParam(value = "browser", required = false) String browserRequest)
+			@RequestParam(value = "browser", required = false) String browserRequest,
+			@RequestParam(value = "code", required = false) String codeRequest)
 			throws AcServiceException, IOException {
 		// FOR TESTING PURPOSES
 		if (request.getParameter("TESTING") != null
@@ -189,6 +199,9 @@ public class AcSpWeb {
 
 			response.addCookie(authCookie);
 			return "redirect:" + target;
+		} else if (codeRequest != null) {
+			String code = codeRepository.generateAcessCode(token);
+			return "redirect:" + target + "#" + code;
 		} else {
 			return "redirect:" + target + "#" + token;
 		}
@@ -198,6 +211,17 @@ public class AcSpWeb {
 	public void deleteToken(@RequestParam("token") String token)
 			throws AcServiceException {
 		service.deleteToken(token);
+	}
+
+	@RequestMapping(method = RequestMethod.POST, value = "/validateCode/{code}")
+	public String validateCode(Model model, @RequestParam("code") String code) throws AcServiceException {
+		String token = codeRepository.validateAccessCode(code);
+		if (token != null) {
+			model.addAttribute("token", token);
+			return "validated";
+		} else {
+			return "/ac/denied";
+		}
 	}
 
 	@RequestMapping("/success")

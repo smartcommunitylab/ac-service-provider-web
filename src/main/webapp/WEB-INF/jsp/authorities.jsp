@@ -1,28 +1,5 @@
-<%-- 
-    Document   : authorities
-    Created on : Jun 1, 2012, 2:52:43 PM
-    Author     : vic
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<!-- <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF8">
-        <link href="css/style.css" rel="stylesheet" type="text/css">
-        <title>Authentication required</title>
-    </head>
-    <body>
-        <h1>Authentication required</h1>
-        <p>Please choose an authority to login:</p><br>
-    <c:forEach var="entry" items="${authorities}">
-        <a href="<=request.getContextPath()%>/ac/getToken/${entry.value}?redirect=${redirect}">${entry.key}</a>
-    </c:forEach>
-
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -40,7 +17,7 @@
 		<ul>
 			<c:forEach var="entry" items="${authorities}">
 				<li><a
-					href="<%=request.getContextPath() %>/ac/getToken/${entry.value}?redirect=${redirect}${browser != null ? '&browser=' : ''}">${entry.key}</a></li>
+					href="<%=request.getContextPath() %>/ac/getToken/${entry.value}?redirect=${redirect}${browser != null ? '&browser=' : ''}${code != null ? '&code=' : ''}">${entry.key}</a></li>
 			</c:forEach>
 		</ul>
 	</div>
