@@ -214,13 +214,13 @@ public class AcSpWeb {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/validateCode/{code}")
-	public String validateCode(Model model, @RequestParam("code") String code) throws AcServiceException {
+	public String validateCode(Model model, @PathVariable String code) throws AcServiceException {
 		String token = codeRepository.validateAccessCode(code);
 		if (token != null) {
 			model.addAttribute("token", token);
 			return "validated";
 		} else {
-			return "/ac/denied";
+			return "denied";
 		}
 	}
 
@@ -237,4 +237,10 @@ public class AcSpWeb {
 			throws IOException {
 		resp.sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
 	}
+
+	@RequestMapping("/test")
+	public String test() {
+		return "test";
+	}
+
 }
