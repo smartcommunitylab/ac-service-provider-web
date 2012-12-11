@@ -5,11 +5,12 @@
 package eu.trentorise.smartcampus.ac.provider.controllers;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
-import javax.servlet.http.Cookie;
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -19,7 +20,7 @@ import org.owasp.esapi.errors.ValidationException;
 import org.owasp.validator.html.PolicyException;
 import org.owasp.validator.html.ScanException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -47,18 +48,30 @@ public class AcSpWeb {
 	private AcServiceAdapter service;
 	@Autowired
 	private AttributesAdapter attrAdapter;
-	@Value("${ac.redirect.hosts}")
-	private String redirectHosts;
+	private List<String> redirectHosts;
 	private static String defaultHosts = null;
-
-	@Value("${secure.cookies}")
-	private String secureCookies;
 
 	@Autowired
 	private AccessCodeRepository codeRepository;
-	
+
 	@Autowired
 	private Utils utility;
+
+	@SuppressWarnings("unused")
+	@PostConstruct
+	private void init() throws IOException {
+		Properties configurations = PropertiesLoaderUtils
+				.loadAllProperties("acproviderweb.properties");
+		redirectHosts = new ArrayList<String>();
+		for (int i = 1; i <= 100; i++) {
+			String host = configurations.getProperty("ac.redirect.hosts_" + i);
+			if (host != null) {
+				redirectHosts.add(host.trim());
+			} else {
+				break;
+			}
+		}
+	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/getToken")
 	public String showAuthorities(
@@ -96,37 +109,24 @@ public class AcSpWeb {
 		return "authorities";
 	}
 
-	private boolean isSecureCookiesEnvironment() {
-		if (secureCookies == null) {
-			logger.warn("secure.cookies configuration not present, it will be loaded default value: true");
-		} else if (!secureCookies.trim().equalsIgnoreCase("n")
-				&& !secureCookies.trim().equalsIgnoreCase("y")) {
-			logger.warn("secure.cookies setted with unknown value, it will be loaded default value: true");
-		} else {
-			logger.info("secure.cookies setted with value "
-					+ secureCookies.trim());
-		}
-
-		return secureCookies == null
-				|| !secureCookies.trim().equalsIgnoreCase("n");
-	}
-
 	private static String getDefaultHost(HttpServletRequest request) {
 		if (defaultHosts == null) {
 			String result = request.getServerPort() == 80 ? (request
 					.getServerName() + ",") : "";
-			defaultHosts = result + request.getServerName() + ":"
-					+ request.getServerPort();
+			defaultHosts = "(https|http)://(" + result
+					+ request.getServerName() + ":" + request.getServerPort()
+					+ ")/(.)*";
 		}
 		return defaultHosts;
 	}
 
-	private static boolean checkRedirect(String redirect, String redirectHosts,
-			String _default) {
-		String hosts = redirectHosts != null ? redirectHosts : _default;
-		String[] array = hosts.split(",");
-		for (String s : array) {
-			if (redirect.matches("((https)|(http))://" + s + "/(.)*"))
+	private static boolean checkRedirect(String redirect,
+			List<String> redirectHosts, String _default) {
+		if (redirectHosts.isEmpty()) {
+			redirectHosts.add(_default);
+		}
+		for (String s : redirectHosts) {
+			if (redirect.matches(s))
 				return true;
 		}
 		return false;
@@ -181,25 +181,7 @@ public class AcSpWeb {
 			target = "/ac/denied";
 		}
 
-		if (browserRequest != null) {
-			Cookie authCookie = new Cookie("auth_token", token);
-			if (redirect != null && !redirect.isEmpty()) {
-				try {
-					String domain = utility.retrieveDomain(redirect);
-					authCookie.setDomain(domain);
-				} catch (MalformedURLException e) {
-					// do nothing
-				}
-			}
-			authCookie.setPath("/");
-			// cookie set secure only in production environment
-			if (isSecureCookiesEnvironment()) {
-				authCookie.setSecure(true);
-			}
-
-			response.addCookie(authCookie);
-			return "redirect:" + target;
-		} else if (codeRequest != null) {
+		if (codeRequest != null) {
 			String code = codeRepository.generateAcessCode(token);
 			return "redirect:" + target + "#" + code;
 		} else {
@@ -214,10 +196,9 @@ public class AcSpWeb {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/validateCode/{code}")
-	public String validateCode(Model model, 
-			HttpServletRequest request,
-			HttpServletResponse response,
-			@PathVariable String code) throws AcServiceException, IOException {
+	public String validateCode(Model model, HttpServletRequest request,
+			HttpServletResponse response, @PathVariable String code)
+			throws AcServiceException, IOException {
 		String token = codeRepository.validateAccessCode(code);
 		if (token != null) {
 			model.addAttribute("token", token);
