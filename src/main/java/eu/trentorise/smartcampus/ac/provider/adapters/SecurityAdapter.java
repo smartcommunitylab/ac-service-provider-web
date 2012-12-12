@@ -28,6 +28,12 @@ public class SecurityAdapter {
 	AttributesAdapter attrAdapter;
 	private static Map<String, List<SecurityEntry>> securityMap;
 
+	/**
+	 * The methods reads at scheduled time authorities whitelist files
+	 * 
+	 * @throws IOException
+	 */
+
 	// fixedRate is in ms
 	@Scheduled(fixedRate = 30000)
 	public void refreshSecurityList() throws IOException {
@@ -76,6 +82,22 @@ public class SecurityAdapter {
 		refreshSecurityList();
 	}
 
+	/**
+	 * Method checks if a user (defined by its list of attributes) is authorized
+	 * to access the system.
+	 * 
+	 * First it's checked the list of attributes passed as checkAttrs, then, if
+	 * this check fails, name and surname of the user
+	 * 
+	 * @param authName
+	 *            authority name to get list of attributes
+	 * @param checkAttrs
+	 *            list of attributes to check
+	 * @param attrs
+	 *            user attributes
+	 * @return true if user attribute is present in authority whitelist, false
+	 *         otherwise
+	 */
 	public boolean access(String authName, List<String> checkAttrs,
 			Map<String, String> attrs) {
 		List<SecurityEntry> securityList = securityMap.get(authName);
@@ -98,7 +120,7 @@ public class SecurityAdapter {
 
 				// check id attrs
 
-				// security entry MUST only valid key attribute
+				// security entry MUST contain only valid key attribute
 				boolean access = !Collections.disjoint(checkAttrs, se
 						.getIdSecurityEntries().keySet());
 				if (!idAttrCheck && !se.getIdSecurityEntries().isEmpty()) {

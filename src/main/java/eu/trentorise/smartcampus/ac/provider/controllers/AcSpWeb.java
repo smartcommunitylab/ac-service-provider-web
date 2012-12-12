@@ -73,6 +73,23 @@ public class AcSpWeb {
 		}
 	}
 
+	/**
+	 * The method generate an html page presenting the authorities available for
+	 * authentication
+	 * 
+	 * @param model
+	 * @param request
+	 *            the http request
+	 * @param browserRequest
+	 *            flag to identify a browser request (actually not used)
+	 * @param codeRequest
+	 *            flag to identify a two steps token retrieving
+	 * @return page to forward to
+	 * @throws ValidationException
+	 * @throws IntrusionException
+	 * @throws ScanException
+	 * @throws PolicyException
+	 */
 	@RequestMapping(method = RequestMethod.GET, value = "/getToken")
 	public String showAuthorities(
 			Model model,
@@ -132,6 +149,28 @@ public class AcSpWeb {
 		return false;
 	}
 
+	/**
+	 * The method redirect to provided url appending to the end the
+	 * authentication token for given authority. If it is present codeRequest
+	 * flag, methods appends a short-living code to redirect url, the code is
+	 * used in the two steps authentication to retrieve the token for
+	 * authentication
+	 * 
+	 * @param authorityUrl
+	 *            URL of authority used for authentication
+	 * @param request
+	 *            the http request
+	 * @param response
+	 *            the http response
+	 * @param browserRequest
+	 *            flag to identify a browser request (actually not used)
+	 * @param codeRequest
+	 *            flag to identify a two steps token retrieving
+	 * @return
+	 * @throws AcServiceException
+	 * @throws IOException
+	 */
+
 	@RequestMapping(method = RequestMethod.GET, value = "/getToken/{authorityUrl}")
 	public String getToken(
 			@PathVariable("authorityUrl") String authorityUrl,
@@ -189,11 +228,34 @@ public class AcSpWeb {
 		}
 	}
 
+	/**
+	 * The method invalidates the token
+	 * 
+	 * @param token
+	 *            the token to invalidate
+	 * @throws AcServiceException
+	 */
+
 	@RequestMapping(method = RequestMethod.DELETE, value = "/invalidateToken/{token}")
 	public void deleteToken(@RequestParam("token") String token)
 			throws AcServiceException {
 		service.deleteToken(token);
 	}
+
+	/**
+	 * Validation of short-living code.
+	 * 
+	 * @param model
+	 * @param request
+	 *            the http request
+	 * @param response
+	 *            the http response
+	 * @param code
+	 *            code to validate
+	 * @return the authentication token relative to the code
+	 * @throws AcServiceException
+	 * @throws IOException
+	 */
 
 	@RequestMapping(method = RequestMethod.POST, value = "/validateCode/{code}")
 	public String validateCode(Model model, HttpServletRequest request,

@@ -58,6 +58,15 @@ public class AttributesAdapter {
 		}
 	}
 
+	/**
+	 * Retrieve from http request the attribute of a specified authority
+	 * 
+	 * @param authority
+	 *            the authority specified
+	 * @param request
+	 *            the http request to process
+	 * @return a map of user attributes
+	 */
 	public Map<String, String> getAttributes(String authority,
 			HttpServletRequest request) {
 		AuthorityMapping mapping = authorities.get(authority);
@@ -84,6 +93,13 @@ public class AttributesAdapter {
 		return attrs;
 	}
 
+	/**
+	 * Returns of the identifying attributes of an authority
+	 * 
+	 * @param authority
+	 *            the authority
+	 * @return the list of identifying attributes for the given authority
+	 */
 	public List<String> getIdentifyingAttributes(String authority) {
 		AuthorityMapping mapping = authorities.get(authority);
 		if (mapping == null) {
@@ -92,6 +108,13 @@ public class AttributesAdapter {
 		}
 		return mapping.getIdentifyingAttributes();
 	}
+
+	/**
+	 * Returns of the authorities available
+	 * 
+	 * @return the map of authorities, the key is authority name and the value
+	 *         is its url
+	 */
 
 	public Map<String, String> getAuthorityUrls() {
 		Map<String, String> map = new HashMap<String, String>();

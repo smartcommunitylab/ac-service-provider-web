@@ -69,6 +69,16 @@ public class AcServiceAdapter {
 		secAdapter.init();
 	}
 
+	/**
+	 * Updates of user attributes using the values getted from http request
+	 * 
+	 * @param authorityUrl
+	 *            the url of authority used from user to authenticate himself
+	 * @param req
+	 *            the http request
+	 * @return the authentication token of the user (renew if it's expired)
+	 * @throws AcServiceException
+	 */
 	public String updateUser(String authorityUrl, HttpServletRequest req)
 			throws AcServiceException {
 		Authority auth = service.getAuthorityByUrl(authorityUrl);

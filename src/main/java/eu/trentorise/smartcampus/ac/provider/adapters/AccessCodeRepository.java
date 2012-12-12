@@ -10,16 +10,33 @@ import org.springframework.stereotype.Component;
 public class AccessCodeRepository {
 
 	private final static int EXP_TIME = 60000;
-	
+
 	private static Map<String, CodeDescriptor> map = new HashMap<String, CodeDescriptor>();
-	
+
+	/**
+	 * Generation of a short-living access code
+	 * 
+	 * @param authToken
+	 *            token to bind with generated access code to
+	 * @return the access code generated
+	 */
 	public synchronized String generateAcessCode(String authToken) {
 		String code = UUID.randomUUID().toString();
-		CodeDescriptor d = new CodeDescriptor(authToken, System.currentTimeMillis()+EXP_TIME);
+		CodeDescriptor d = new CodeDescriptor(authToken,
+				System.currentTimeMillis() + EXP_TIME);
 		map.put(code, d);
 		return code;
 	}
-	
+
+	/**
+	 * Validation of the access code
+	 * 
+	 * @param code
+	 *            access code to validate
+	 * @return if code is valid then the binded authentication token is
+	 *         retrieved otherwise null
+	 */
+
 	public synchronized String validateAccessCode(String code) {
 		if (map.get(code) != null) {
 			CodeDescriptor d = map.remove(code);
@@ -29,15 +46,16 @@ public class AccessCodeRepository {
 		}
 		return null;
 	}
-	
+
 	private static class CodeDescriptor {
 		String authToken;
 		long expTime;
+
 		public CodeDescriptor(String authToken, long expTime) {
 			super();
 			this.authToken = authToken;
 			this.expTime = expTime;
 		}
 	}
-	
+
 }
