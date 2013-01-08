@@ -3,6 +3,12 @@ package eu.trentorise.smartcampus.ac.provider.adapters;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Security entry of a white-list
+ * 
+ * @author mirko perillo
+ * 
+ */
 public class SecurityEntry {
 	private String nameValue;
 	private String surnameValue;

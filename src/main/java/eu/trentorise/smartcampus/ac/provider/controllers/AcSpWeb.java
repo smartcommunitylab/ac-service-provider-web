@@ -36,6 +36,7 @@ import eu.trentorise.smartcampus.ac.provider.adapters.AttributesAdapter;
 import eu.trentorise.smartcampus.ac.provider.utils.Utils;
 
 /**
+ * Access provider REST controller
  * 
  * @author Viktor Pravdin
  */

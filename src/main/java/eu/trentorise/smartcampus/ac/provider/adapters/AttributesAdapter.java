@@ -25,6 +25,7 @@ import eu.trentorise.smartcampus.ac.provider.jaxbmodel.AuthorityMapping;
 import eu.trentorise.smartcampus.ac.provider.model.Authority;
 
 /**
+ * This class manages all operations on attributes
  * 
  * @author Viktor Pravdin
  */

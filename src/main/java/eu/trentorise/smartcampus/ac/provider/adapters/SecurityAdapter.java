@@ -17,6 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+/**
+ * This class manages the operations on security white-lists, that contains the
+ * set of users, for every authority, qualified to access the system
+ * 
+ * @author mirko perillo
+ * 
+ */
 @Component
 public class SecurityAdapter {
 
@@ -29,7 +36,7 @@ public class SecurityAdapter {
 	private static Map<String, List<SecurityEntry>> securityMap;
 
 	/**
-	 * The methods reads at scheduled time authorities whitelist files
+	 * The methods reads at scheduled time authorities white-list files
 	 * 
 	 * @throws IOException
 	 */
@@ -95,7 +102,7 @@ public class SecurityAdapter {
 	 *            list of attributes to check
 	 * @param attrs
 	 *            user attributes
-	 * @return true if user attribute is present in authority whitelist, false
+	 * @return true if user attribute is present in authority white-list, false
 	 *         otherwise
 	 */
 	public boolean access(String authName, List<String> checkAttrs,

@@ -30,6 +30,7 @@ import eu.trentorise.smartcampus.ac.provider.model.Authority;
 import eu.trentorise.smartcampus.ac.provider.model.User;
 
 /**
+ * This class manages operations of the service
  * 
  * @author Viktor Pravdin
  */

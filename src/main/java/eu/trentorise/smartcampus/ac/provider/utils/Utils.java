@@ -15,6 +15,12 @@ import org.owasp.validator.html.PolicyException;
 import org.owasp.validator.html.ScanException;
 import org.springframework.stereotype.Service;
 
+/**
+ * Utility class
+ * 
+ * @author mirko perillo
+ * 
+ */
 @Service
 public class Utils {
 
@@ -32,6 +38,17 @@ public class Utils {
 
 	}
 
+	/**
+	 * Sanitizes a string from html entities
+	 * 
+	 * @param s
+	 *            the string to sanitize
+	 * @return the sanitized string
+	 * @throws ValidationException
+	 * @throws IntrusionException
+	 * @throws ScanException
+	 * @throws PolicyException
+	 */
 	public String sanitize(String s) throws ValidationException,
 			IntrusionException, ScanException, PolicyException {
 

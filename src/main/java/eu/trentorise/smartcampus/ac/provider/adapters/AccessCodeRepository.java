@@ -6,6 +6,12 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * Repository of access codes for the two-step authentication
+ * 
+ * @author mirko perillo
+ * 
+ */
 @Component
 public class AccessCodeRepository {
 
