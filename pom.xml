@@ -119,20 +119,6 @@
 		</dependency>
 	</dependencies>
 
-	<distributionManagement>
-		<repository>
-			<id>sc-releases</id>
-			<name>Smartcampus releases repo</name>
-			<url>http://213.21.154.86/nexus/content/repositories/releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>sc-snapshots</id>
-			<name>Smartcampus snapshots repo</name>
-			<url>http://213.21.154.86/nexus/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-
 	<build>
 		<plugins>
 			<plugin>
@@ -144,16 +130,6 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			<!-- Uncomment to regenerate the jaxbmodel classes from the schema -->
-			<!--plugin> <groupId>org.jvnet.jaxb2.maven2</groupId> <artifactId>maven-jaxb2-plugin</artifactId> 
-				<executions> <execution> <goals> <goal>generate</goal> </goals> <configuration> 
-				<schemaIncludes> <include>jaxb/attributesBinding/*.xsd</include> </schemaIncludes> 
-				<episodeFile>${project.build.directory}/generated-sources/xjc/META-INF/jaxb-attributesBinding.episode</episodeFile> 
-				<generatePackage>eu.trentorise.smartcampus.ac.provider.jaxbmodel</generatePackage> 
-				</configuration> <id>jaxb-generate-attributesBinding</id> </execution> </executions> 
-				<configuration> <catalog>src/main/resources/jaxb/catalog.xml</catalog> <catalogResolver>org.jvnet.jaxb2.maven2.resolver.tools.ClasspathCatalogResolver</catalogResolver> 
-				<forceRegenerate>true</forceRegenerate> <generateDirectory>${project.build.directory}/generated-sources/xjc</generateDirectory> 
-				<verbose>true</verbose> </configuration> </plugin -->
 			<plugin>
 				<groupId>org.mortbay.jetty</groupId>
 				<artifactId>maven-jetty-plugin</artifactId>
@@ -163,9 +139,21 @@
 					<stopPort>9999</stopPort>
 					<contextPath>/</contextPath>
 				</configuration>
-
 			</plugin>
-
+            <plugin>
+                <inherited>false</inherited>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>1.8.0</version>
+                <configuration>
+                    <header>${basedir}/license/license.txt</header>
+                    <failIfMissing>true</failIfMissing>
+                    <aggregate>true</aggregate>
+                    <includes>
+                        <include>src/**</include>
+                    </includes>
+                </configuration>
+            </plugin>
 		</plugins>
 		<finalName>ac-service-provider-web</finalName>
 	</build>
