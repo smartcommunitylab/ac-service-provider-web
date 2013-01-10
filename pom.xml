@@ -157,4 +157,11 @@
 		</plugins>
 		<finalName>ac-service-provider-web</finalName>
 	</build>
+    <repositories>
+        <repository>
+            <id>SmartCampus</id>
+            <url>http://repository.smartcampuslab.it/content/groups/public</url>
+        </repository>
+    </repositories>
+	
 </project>
