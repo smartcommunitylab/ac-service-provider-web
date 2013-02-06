@@ -35,6 +35,7 @@ import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,9 @@ public class AcServiceAdapter {
 
 	private static final long DAY = 24L * 3600 * 1000;
 	private static final long TOKEN_DEADLINE = 2 * DAY;
+
+	private static final Logger traceUserLogger = Logger
+			.getLogger("traceUserToken");
 
 	@Value("${ac.endpoint.url}")
 	private String endpointUrl;
@@ -146,8 +150,9 @@ public class AcServiceAdapter {
 
 		if (users.isEmpty()) {
 			token = service.generateAuthToken();
-			service.createUser(token, System.currentTimeMillis()
+			User user = service.createUser(token, System.currentTimeMillis()
 					+ TOKEN_DEADLINE, list);
+			traceUserLogger.info(user.getId() + "," + token);
 		} else {
 			User user = users.get(0);
 			if (service.isValidUser(user.getAuthToken())) {
@@ -156,6 +161,7 @@ public class AcServiceAdapter {
 			} else {
 				token = service.generateAuthToken();
 				expirationDate = System.currentTimeMillis() + TOKEN_DEADLINE;
+				traceUserLogger.info(user.getId() + "," + token);
 			}
 			service.updateUser(user.getId(), token, expirationDate, list);
 		}
