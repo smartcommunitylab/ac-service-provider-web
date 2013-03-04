@@ -42,7 +42,7 @@ public class AccessCodeRepository {
 	 *            token to bind with generated access code to
 	 * @return the access code generated
 	 */
-	public synchronized String generateAcessCode(String authToken) {
+	public synchronized String generateAccessCode(String authToken) {
 		String code = UUID.randomUUID().toString();
 		CodeDescriptor d = new CodeDescriptor(authToken,
 				System.currentTimeMillis() + EXP_TIME);

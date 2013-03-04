@@ -48,4 +48,9 @@
 		<attributes alias="eu.trentorise.smartcampus.surname">sn</attributes>
 		<identifyingAttributes>eppn</identifyingAttributes>
 	</authorityMapping>
+    <authorityMapping name="google" url="google" useParams="true">
+        <attributes alias="eu.trentorise.smartcampus.givenname">surname</attributes>
+        <attributes alias="eu.trentorise.smartcampus.surname">name</attributes>
+        <identifyingAttributes>email</identifyingAttributes>
+    </authorityMapping>
 </authorities>

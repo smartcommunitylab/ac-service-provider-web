@@ -41,6 +41,7 @@
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="required" />
 		<xsd:attribute name="url" type="xsd:string" use="required" />
+        <xsd:attribute name="useParams" type="xsd:boolean" use="optional" />
 	</xsd:complexType>
 	<xsd:complexType name="attributes">
 		<xsd:simpleContent>

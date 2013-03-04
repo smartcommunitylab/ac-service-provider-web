@@ -188,4 +188,8 @@ public class AcServiceAdapter {
 	protected Collection<Authority> getAuthorities() throws AcServiceException {
 		return service.getAuthorities();
 	}
+	
+	public User getUser(String token) throws AcServiceException {
+		return service.getUserByToken(token);
+	}
 }

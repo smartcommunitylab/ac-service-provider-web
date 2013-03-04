@@ -37,6 +37,8 @@ import org.owasp.validator.html.PolicyException;
 import org.owasp.validator.html.ScanException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -49,6 +51,9 @@ import eu.trentorise.smartcampus.ac.provider.AcServiceException;
 import eu.trentorise.smartcampus.ac.provider.adapters.AcServiceAdapter;
 import eu.trentorise.smartcampus.ac.provider.adapters.AccessCodeRepository;
 import eu.trentorise.smartcampus.ac.provider.adapters.AttributesAdapter;
+import eu.trentorise.smartcampus.ac.provider.jaxbmodel.UserData;
+import eu.trentorise.smartcampus.ac.provider.model.Attribute;
+import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.ac.provider.utils.Utils;
 
 /**
@@ -190,11 +195,10 @@ public class AcSpWeb {
 
 	@RequestMapping(method = RequestMethod.GET, value = "/getToken/{authorityUrl}")
 	public String getToken(
-			@PathVariable("authorityUrl") String authorityUrl,
 			HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestParam(value = "browser", required = false) String browserRequest,
-			@RequestParam(value = "code", required = false) String codeRequest)
+			@PathVariable("authorityUrl") String authorityUrl,
+			@RequestParam(value = "redirect", required = false) String redirect)
 			throws AcServiceException, IOException {
 		// FOR TESTING PURPOSES
 		if (request.getParameter("TESTING") != null
@@ -218,9 +222,6 @@ public class AcSpWeb {
 				}
 			}
 		}
-
-		String redirect = request.getParameter("redirect");
-
 		String target = "/ac/success";
 		if (redirect != null && !redirect.isEmpty()) {
 			if (!checkRedirect(redirect, redirectHosts, getDefaultHost(request))) {
@@ -237,12 +238,8 @@ public class AcSpWeb {
 			target = "/ac/denied";
 		}
 
-		if (codeRequest != null) {
-			String code = codeRepository.generateAcessCode(token);
-			return "redirect:" + target + "#" + code;
-		} else {
-			return "redirect:" + target + "#" + token;
-		}
+		String code = codeRepository.generateAccessCode(token);
+		return "redirect:" + target + "#" + code;
 	}
 
 	/**
@@ -275,13 +272,25 @@ public class AcSpWeb {
 	 */
 
 	@RequestMapping(method = RequestMethod.POST, value = "/validateCode/{code}")
-	public String validateCode(Model model, HttpServletRequest request,
+	public ResponseEntity<UserData> validateCode(Model model, HttpServletRequest request,
 			HttpServletResponse response, @PathVariable String code)
 			throws AcServiceException, IOException {
 		String token = codeRepository.validateAccessCode(code);
 		if (token != null) {
-			model.addAttribute("token", token);
-			return "validated";
+			UserData data = new UserData();
+			data.setToken(token);
+			User user = service.getUser(token); 
+			data.setExpires(user.getExpTime());
+			data.setSocialId(user.getSocialId());
+			data.setUserId(user.getId()+"");
+			data.setIdentityAttributes(new ArrayList<Attribute>());
+			for (Attribute a : user.getAttributes()) {
+				if (attrAdapter.isIdentityAttr(a)) {
+					data.getIdentityAttributes().add(a);
+				}
+			}
+			
+			return new ResponseEntity<UserData>(data, HttpStatus.OK);
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return null;
