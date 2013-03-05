@@ -56,6 +56,8 @@ public class AcServiceAdapter {
 
 	private static final long DAY = 24L * 3600 * 1000;
 	private static final long TOKEN_DEADLINE = 60 * DAY;
+	private static final long SESSION_TOKEN_DEADLINE = 1000*60*60*4;
+	
 
 	private static final Logger traceUserLogger = Logger
 			.getLogger("traceUserToken");
@@ -125,7 +127,7 @@ public class AcServiceAdapter {
 		}
 		List<User> users = service.getUsersByAttributes(list);
 		if (users == null)
-			users = new ArrayList();
+			users = new ArrayList<User>();
 		if (users.size() > 1) {
 			throw new IllegalArgumentException(
 					"The request attributes identify more than one user");
@@ -191,5 +193,17 @@ public class AcServiceAdapter {
 	
 	public User getUser(String token) throws AcServiceException {
 		return service.getUserByToken(token);
+	}
+	
+	public User getUserForSession(String token) throws AcServiceException {
+		User user = getUser(token);
+		if (user != null) {
+			long expTime = System.currentTimeMillis() + SESSION_TOKEN_DEADLINE;
+			String sessionToken = service.createSessionToken(user.getId(), expTime);
+			user.setExpTime(expTime);
+			user.setAuthToken(sessionToken);
+			return user;
+		}
+		return null;
 	}
 }
