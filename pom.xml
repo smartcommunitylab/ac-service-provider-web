@@ -117,6 +117,13 @@
 			<artifactId>antisamy</artifactId>
 			<version>1.4</version>
 		</dependency>
+		
+		<!-- Jackson -->
+		<dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-lgpl</artifactId>
+            <version>1.9.12</version>
+        </dependency>
 	</dependencies>
 
 	<build>
