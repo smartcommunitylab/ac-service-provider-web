@@ -55,7 +55,7 @@ import eu.trentorise.smartcampus.ac.provider.model.User;
 public class AcServiceAdapter {
 
 	private static final long DAY = 24L * 3600 * 1000;
-	private static final long TOKEN_DEADLINE = 2 * DAY;
+	private static final long TOKEN_DEADLINE = 60 * DAY;
 
 	private static final Logger traceUserLogger = Logger
 			.getLogger("traceUserToken");
