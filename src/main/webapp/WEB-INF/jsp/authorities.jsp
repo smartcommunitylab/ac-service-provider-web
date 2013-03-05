@@ -25,7 +25,7 @@
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, maximum-scale=1">
 <link href="../css/style.css" rel="stylesheet" type="text/css">
-<title>SmartCampus Authentication</title>
+<title>Smart Campus Authentication</title>
 </head>
 <body>
 	<img class="logo" src="../img/ls_logo.png" alt="SmartCampus" />
@@ -33,10 +33,12 @@
 	<div class="authorities">
 		<p>Please choose the provider for your login</p>
 		<ul>
-			<c:forEach var="entry" items="${authorities}">
-				<li><a
-					href="<%=request.getContextPath() %>/ac/getToken/${entry.value}?redirect=${redirect}${browser != null ? '&browser=' : ''}${code != null ? '&code=' : ''}">${entry.key}</a></li>
-			</c:forEach>
+            <li>
+		      <a href="<%=request.getContextPath() %>/ac/getToken/fbk?redirect=${redirect}${browser != null ? '&browser=' : ''}${code != null ? '&code=' : ''}">FBK</a>
+            </li>
+            <li>
+              <a href="<%=request.getContextPath() %>/ac/getToken/unitn?redirect=${redirect}${browser != null ? '&browser=' : ''}${code != null ? '&code=' : ''}">UNITN</a>
+            </li>
 		</ul>
 	</div>
 </body>
