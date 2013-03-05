@@ -36,8 +36,6 @@ import org.owasp.validator.html.PolicyException;
 import org.owasp.validator.html.ScanException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,6 +43,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import eu.trentorise.smartcampus.ac.provider.AcServiceException;
 import eu.trentorise.smartcampus.ac.provider.adapters.AcServiceAdapter;
@@ -266,7 +265,7 @@ public class AcSpWeb {
 	 */
 
 	@RequestMapping(method = RequestMethod.POST, value = "/validateCode/{code}")
-	public ResponseEntity<UserData> validateCode(Model model, HttpServletRequest request,
+	public @ResponseBody UserData validateCode(Model model, HttpServletRequest request,
 			HttpServletResponse response, 
 			@PathVariable String code,
 			@RequestParam(value = "accessType", required = false, defaultValue=AT_OFFLINE) String accessType)
@@ -293,7 +292,7 @@ public class AcSpWeb {
 				}
 			}
 			
-			return new ResponseEntity<UserData>(data, HttpStatus.OK);
+			return data;
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return null;
