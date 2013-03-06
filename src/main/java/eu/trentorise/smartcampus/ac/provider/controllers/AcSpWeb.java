@@ -233,6 +233,37 @@ public class AcSpWeb {
 		}
 	}
 
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/promote/{authorityUrl}")
+	public String promote(
+			HttpServletRequest request,
+			HttpServletResponse response,
+			@PathVariable("authorityUrl") String authorityUrl,
+			@RequestParam(value = "redirect", required = false) String redirect,
+			@RequestParam("token") String oldToken
+			)
+			throws AcServiceException, IOException {
+		String target = "/ac/success";
+		if (redirect != null && !redirect.isEmpty()) {
+			if (!checkRedirect(redirect, redirectHosts, getDefaultHost(request))) {
+				throw new IllegalArgumentException("Incorrect redirect URL: "
+						+ redirect);
+			}
+			target = redirect;
+		}
+		
+		String token = "";
+		try {
+			token = service.promoteUser(authorityUrl, oldToken, request);
+			
+			String code = codeRepository.generateAccessCode(token);
+			return "redirect:" + target + "#" + code;
+		} catch (SecurityException e) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return "redirect:/ac/denied";
+		}
+	}
+
 	/**
 	 * The method invalidates the token
 	 * 
