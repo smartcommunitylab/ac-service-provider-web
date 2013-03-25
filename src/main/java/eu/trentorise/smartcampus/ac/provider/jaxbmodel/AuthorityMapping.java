@@ -51,6 +51,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;/sequence>
  *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="url" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="useParams" use="optional" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -71,6 +72,9 @@ public class AuthorityMapping {
     protected String name;
     @XmlAttribute(name = "url", required = true)
     protected String url;
+
+    @XmlAttribute(name = "useParams", required = false)
+    protected boolean useParams;
 
     /**
      * Gets the value of the attributes property.
@@ -178,4 +182,19 @@ public class AuthorityMapping {
         this.url = value;
     }
 
+	/**
+	 * @return the useParams
+	 */
+	public boolean isUseParams() {
+		return useParams;
+	}
+
+	/**
+	 * @param useParams the useParams to set
+	 */
+	public void setUseParams(boolean useParams) {
+		this.useParams = useParams;
+	}
+
+    
 }

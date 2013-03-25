@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.trentorise.smartcampus</groupId>
 	<artifactId>ac-service-provider-web</artifactId>
-	<version>1.0</version>
+	<version>1.1</version>
 	<packaging>war</packaging>
 	<name>AC Service Provider WebApp</name>
 
@@ -117,6 +117,13 @@
 			<artifactId>antisamy</artifactId>
 			<version>1.4</version>
 		</dependency>
+		
+		<!-- Jackson -->
+		<dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-lgpl</artifactId>
+            <version>1.9.12</version>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -155,7 +162,7 @@
                 </configuration>
             </plugin>
 		</plugins>
-		<finalName>ac-service-provider-web</finalName>
+		<finalName>accesstoken-provider</finalName>
 	</build>
     <repositories>
         <repository>

@@ -30,7 +30,6 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.owasp.esapi.errors.IntrusionException;
 import org.owasp.esapi.errors.ValidationException;
 import org.owasp.validator.html.PolicyException;
@@ -44,11 +43,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import eu.trentorise.smartcampus.ac.provider.AcServiceException;
 import eu.trentorise.smartcampus.ac.provider.adapters.AcServiceAdapter;
 import eu.trentorise.smartcampus.ac.provider.adapters.AccessCodeRepository;
 import eu.trentorise.smartcampus.ac.provider.adapters.AttributesAdapter;
+import eu.trentorise.smartcampus.ac.provider.jaxbmodel.UserData;
+import eu.trentorise.smartcampus.ac.provider.model.Attribute;
+import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.ac.provider.utils.Utils;
 
 /**
@@ -59,7 +62,15 @@ import eu.trentorise.smartcampus.ac.provider.utils.Utils;
 @Controller
 public class AcSpWeb {
 
-	private static final Logger logger = Logger.getLogger(AcSpWeb.class);
+	/**
+	 * 
+	 */
+	private static final String AT_OFFLINE = "offline";
+
+	/**
+	 * 
+	 */
+	private static final String AT_ONLINE = "online";
 
 	@Autowired
 	private AcServiceAdapter service;
@@ -74,7 +85,6 @@ public class AcSpWeb {
 	@Autowired
 	private Utils utility;
 
-	@SuppressWarnings("unused")
 	@PostConstruct
 	private void init() throws IOException {
 		Properties configurations = PropertiesLoaderUtils
@@ -97,10 +107,8 @@ public class AcSpWeb {
 	 * @param model
 	 * @param request
 	 *            the http request
-	 * @param browserRequest
-	 *            flag to identify a browser request (actually not used)
-	 * @param codeRequest
-	 *            flag to identify a two steps token retrieving
+	 * @param redirect
+	 *            URL to redirect the request the result with the validation code
 	 * @return page to forward to
 	 * @throws ValidationException
 	 * @throws IntrusionException
@@ -111,26 +119,16 @@ public class AcSpWeb {
 	public String showAuthorities(
 			Model model,
 			HttpServletRequest request,
-			@RequestParam(value = "browser", required = false) String browserRequest,
-			@RequestParam(value = "code", required = false) String codeRequest)
+			@RequestParam(value = "redirect", required = false) String redirect)
 			throws ValidationException, IntrusionException, ScanException,
 			PolicyException {
 		// FOR TESTING PURPOSES
 		if (request.getParameter("TESTING") != null) {
 			request.getSession().setAttribute("TESTING", true);
 		}
-		// used to attach browser parameter to getToken urls
-		if (browserRequest != null) {
-			model.addAttribute("browser", "");
-		}
-		// used to attach two-phase code parameter to getToken urls
-		if (codeRequest != null) {
-			model.addAttribute("code", "");
-		}
 		Map<String, String> authorities = attrAdapter.getAuthorityUrls();
 		model.addAttribute("authorities", authorities);
 
-		String redirect = request.getParameter("redirect");
 		if (redirect != null && !redirect.isEmpty()) {
 			if (!checkRedirect(redirect, redirectHosts, getDefaultHost(request))) {
 				throw new IllegalArgumentException("Incorrect redirect URL: "
@@ -179,10 +177,8 @@ public class AcSpWeb {
 	 *            the http request
 	 * @param response
 	 *            the http response
-	 * @param browserRequest
-	 *            flag to identify a browser request (actually not used)
-	 * @param codeRequest
-	 *            flag to identify a two steps token retrieving
+	 * @param redirect
+	 *            URL to redirect the request the result with the validation code
 	 * @return
 	 * @throws AcServiceException
 	 * @throws IOException
@@ -190,11 +186,10 @@ public class AcSpWeb {
 
 	@RequestMapping(method = RequestMethod.GET, value = "/getToken/{authorityUrl}")
 	public String getToken(
-			@PathVariable("authorityUrl") String authorityUrl,
 			HttpServletRequest request,
 			HttpServletResponse response,
-			@RequestParam(value = "browser", required = false) String browserRequest,
-			@RequestParam(value = "code", required = false) String codeRequest)
+			@PathVariable("authorityUrl") String authorityUrl,
+			@RequestParam(value = "redirect", required = false) String redirect)
 			throws AcServiceException, IOException {
 		// FOR TESTING PURPOSES
 		if (request.getParameter("TESTING") != null
@@ -218,9 +213,6 @@ public class AcSpWeb {
 				}
 			}
 		}
-
-		String redirect = request.getParameter("redirect");
-
 		String target = "/ac/success";
 		if (redirect != null && !redirect.isEmpty()) {
 			if (!checkRedirect(redirect, redirectHosts, getDefaultHost(request))) {
@@ -229,19 +221,46 @@ public class AcSpWeb {
 			}
 			target = redirect;
 		}
+		
 		String token = "";
 		try {
 			token = service.updateUser(authorityUrl, request);
+			String code = codeRepository.generateAccessCode(token);
+			return "redirect:" + target + "#" + code;
 		} catch (SecurityException e) {
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			target = "/ac/denied";
+			return "redirect:/ac/denied";
 		}
+	}
 
-		if (codeRequest != null) {
-			String code = codeRepository.generateAcessCode(token);
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/promote/{authorityUrl}")
+	public String promote(
+			HttpServletRequest request,
+			HttpServletResponse response,
+			@PathVariable("authorityUrl") String authorityUrl,
+			@RequestParam(value = "redirect", required = false) String redirect,
+			@RequestParam("token") String oldToken
+			)
+			throws AcServiceException, IOException {
+		String target = "/ac/success";
+		if (redirect != null && !redirect.isEmpty()) {
+			if (!checkRedirect(redirect, redirectHosts, getDefaultHost(request))) {
+				throw new IllegalArgumentException("Incorrect redirect URL: "
+						+ redirect);
+			}
+			target = redirect;
+		}
+		
+		String token = "";
+		try {
+			token = service.promoteUser(authorityUrl, oldToken, request);
+			
+			String code = codeRepository.generateAccessCode(token);
 			return "redirect:" + target + "#" + code;
-		} else {
-			return "redirect:" + target + "#" + token;
+		} catch (SecurityException e) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return "redirect:/ac/denied";
 		}
 	}
 
@@ -269,19 +288,42 @@ public class AcSpWeb {
 	 *            the http response
 	 * @param code
 	 *            code to validate
+	 * @param accessType
+	 *            type of access: offline (to retrieve long-living token) or online (short time token)
 	 * @return the authentication token relative to the code
 	 * @throws AcServiceException
 	 * @throws IOException
 	 */
 
 	@RequestMapping(method = RequestMethod.POST, value = "/validateCode/{code}")
-	public String validateCode(Model model, HttpServletRequest request,
-			HttpServletResponse response, @PathVariable String code)
+	public @ResponseBody UserData validateCode(Model model, HttpServletRequest request,
+			HttpServletResponse response, 
+			@PathVariable String code,
+			@RequestParam(value = "accessType", required = false, defaultValue=AT_OFFLINE) String accessType)
 			throws AcServiceException, IOException {
 		String token = codeRepository.validateAccessCode(code);
 		if (token != null) {
-			model.addAttribute("token", token);
-			return "validated";
+			UserData data = new UserData();
+			User user = null; 
+			
+			if (AT_ONLINE.equals(accessType)) {
+				user = service.getUserForSession(token); 
+			} else {
+				user = service.getUser(token);
+			}
+			
+			data.setToken(token);
+			data.setExpires(user.getExpTime());
+			data.setSocialId(user.getSocialId());
+			data.setUserId(user.getId()+"");
+			data.setIdentityAttributes(new ArrayList<Attribute>());
+			for (Attribute a : user.getAttributes()) {
+				if (attrAdapter.isIdentityAttr(a)) {
+					data.getIdentityAttributes().add(a);
+				}
+			}
+			
+			return data;
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return null;

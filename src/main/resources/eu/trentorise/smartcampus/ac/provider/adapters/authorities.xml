@@ -20,32 +20,22 @@
 <authorities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="XMLSchema4.xsd">
 	<authorityMapping name="unitn" url="unitn">
-		<attributes>Shib-Session-ID</attributes>
-		<attributes>Shib-Session-Index</attributes>
-		<attributes>Shib-Identity-Provider</attributes>
-		<attributes>Shib-Authentication-Method</attributes>
-		<attributes>Shib-Authentication-Instant</attributes>
-		<attributes>Shib-AuthnContext-Class</attributes>
-		<attributes>Shib-AuthnContext-Decl</attributes>
-		<attributes>Shib-Assertion-Count</attributes>
-		<attributes>Shib-Application-ID</attributes>
 		<attributes alias="eu.trentorise.smartcampus.givenname">givenName</attributes>
 		<attributes alias="eu.trentorise.smartcampus.surname">sn</attributes>
 		<attributes>mailAll</attributes>
 		<identifyingAttributes>idada</identifyingAttributes>
 	</authorityMapping>
 	<authorityMapping name="fbk" url="fbk">
-		<attributes>Shib-Session-ID</attributes>
-		<attributes>Shib-Session-Index</attributes>
-		<attributes>Shib-Identity-Provider</attributes>
-		<attributes>Shib-Authentication-Method</attributes>
-		<attributes>Shib-Authentication-Instant</attributes>
-		<attributes>Shib-AuthnContext-Class</attributes>
-		<attributes>Shib-AuthnContext-Decl</attributes>
-		<attributes>Shib-Assertion-Count</attributes>
-		<attributes>Shib-Application-ID</attributes>
 		<attributes alias="eu.trentorise.smartcampus.givenname">givenName</attributes>
 		<attributes alias="eu.trentorise.smartcampus.surname">sn</attributes>
 		<identifyingAttributes>eppn</identifyingAttributes>
 	</authorityMapping>
+<!--     <authorityMapping name="google" url="google" useParams="true"> -->
+<!--         <attributes alias="eu.trentorise.smartcampus.givenname">openid.ext1.value.name</attributes> -->
+<!--         <attributes alias="eu.trentorise.smartcampus.surname">openid.ext1.value.surname</attributes> -->
+<!--         <identifyingAttributes>openid.ext1.value.email</identifyingAttributes> -->
+<!--     </authorityMapping> -->
+<!--     <authorityMapping name="anonymous" url="anonymous" useParams="true"> -->
+<!--         <identifyingAttributes>externalId</identifyingAttributes> -->
+<!--     </authorityMapping> -->
 </authorities>

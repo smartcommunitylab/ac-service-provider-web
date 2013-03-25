@@ -21,8 +21,10 @@
 package eu.trentorise.smartcampus.ac.provider.adapters;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
@@ -38,6 +40,7 @@ import eu.trentorise.smartcampus.ac.provider.AcServiceException;
 import eu.trentorise.smartcampus.ac.provider.jaxbmodel.Attributes;
 import eu.trentorise.smartcampus.ac.provider.jaxbmodel.Authorities;
 import eu.trentorise.smartcampus.ac.provider.jaxbmodel.AuthorityMapping;
+import eu.trentorise.smartcampus.ac.provider.model.Attribute;
 import eu.trentorise.smartcampus.ac.provider.model.Authority;
 
 /**
@@ -51,6 +54,7 @@ public class AttributesAdapter {
 	@Autowired
 	private AcServiceAdapter service;
 	private Map<String, AuthorityMapping> authorities;
+	private Map<String, Set<String>> identityAttributes;
 
 	// Called from the AcServiceAdapter's init
 	protected void init() throws JAXBException, AcServiceException {
@@ -63,6 +67,7 @@ public class AttributesAdapter {
 								"authorities.xml")), Authorities.class);
 		Authorities auths = element.getValue();
 		authorities = new HashMap<String, AuthorityMapping>();
+		identityAttributes = new HashMap<String, Set<String>>();
 		for (AuthorityMapping mapping : auths.getAuthorityMapping()) {
 			Authority auth = service.getAuthorityByName(mapping.getName());
 			if (auth == null) {
@@ -72,6 +77,11 @@ public class AttributesAdapter {
 				service.createAuthority(auth);
 			}
 			authorities.put(mapping.getName(), mapping);
+			Set<String> identities = new HashSet<String>();
+			if (mapping.getIdentifyingAttributes() != null) {
+				identities.addAll(mapping.getIdentifyingAttributes());
+			}
+			identityAttributes.put(auth.getName(), identities);
 		}
 	}
 
@@ -93,7 +103,7 @@ public class AttributesAdapter {
 		}
 		Map<String, String> attrs = new HashMap<String, String>();
 		for (String key : mapping.getIdentifyingAttributes()) {
-			Object value = request.getAttribute(key);
+			Object value = readAttribute(request, key, mapping.isUseParams());
 			if (value != null) {
 				attrs.put(key, value.toString());
 			}
@@ -102,12 +112,22 @@ public class AttributesAdapter {
 			// used alias if present to set attribute in map
 			String key = (attribute.getAlias() != null && !attribute.getAlias()
 					.isEmpty()) ? attribute.getAlias() : attribute.getValue();
-			Object value = request.getAttribute(attribute.getValue());
+			Object value = readAttribute(request,attribute.getValue(), mapping.isUseParams());
 			if (value != null) {
 				attrs.put(key, value.toString());
 			}
 		}
 		return attrs;
+	}
+
+	/**
+	 * @param request
+	 * @param key
+	 * @return
+	 */
+	private Object readAttribute(HttpServletRequest request, String key, boolean useParams) {
+		if (useParams) return request.getParameter(key);
+		return request.getAttribute(key);
 	}
 
 	/**
@@ -139,5 +159,14 @@ public class AttributesAdapter {
 			map.put(mapping.getName(), mapping.getUrl());
 		}
 		return map;
+	}
+
+	/**
+	 * @param a
+	 * @return true if the specified attribute is the identity attribute for the authority
+	 */
+	public boolean isIdentityAttr(Attribute a) {
+		return identityAttributes.containsKey(a.getAuthority().getName()) && 
+				identityAttributes.get(a.getAuthority().getName()).contains(a.getKey());
 	}
 }

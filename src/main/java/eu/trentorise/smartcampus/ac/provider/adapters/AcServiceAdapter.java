@@ -55,10 +55,10 @@ import eu.trentorise.smartcampus.ac.provider.model.User;
 public class AcServiceAdapter {
 
 	private static final long DAY = 24L * 3600 * 1000;
-	private static final long TOKEN_DEADLINE = 2 * DAY;
+	private static final long TOKEN_DEADLINE = 60 * DAY;
+	private static final long SESSION_TOKEN_DEADLINE = 1000 * 60 * 60 * 4;
 
-	private static final Logger traceUserLogger = Logger
-			.getLogger("traceUserToken");
+	private static final Logger traceUserLogger = Logger.getLogger("traceUserToken");
 
 	@Value("${ac.endpoint.url}")
 	private String endpointUrl;
@@ -100,58 +100,34 @@ public class AcServiceAdapter {
 	 * @return the authentication token of the user (renew if it's expired)
 	 * @throws AcServiceException
 	 */
-	public String updateUser(String authorityUrl, HttpServletRequest req)
-			throws AcServiceException {
+	public String updateUser(String authorityUrl, HttpServletRequest req) throws AcServiceException {
 		Authority auth = service.getAuthorityByUrl(authorityUrl);
 		if (auth == null) {
-			throw new IllegalArgumentException("Unknown authority URL: "
-					+ authorityUrl);
+			throw new IllegalArgumentException("Unknown authority URL: " + authorityUrl);
 		}
-		Map<String, String> attributes = attrAdapter.getAttributes(
-				auth.getName(), req);
-		List<String> ids = attrAdapter.getIdentifyingAttributes(auth.getName());
-		// Try to find an already existing user
-		List<Attribute> list = new ArrayList<Attribute>();
-		for (String key : ids) {
-			if (!attributes.containsKey(key)) {
-				throw new IllegalArgumentException(
-						"The required attribute is missing: " + key);
-			}
-			Attribute a = new Attribute();
-			a.setAuthority(auth);
-			a.setKey(key);
-			a.setValue(attributes.get(key));
-			list.add(a);
-		}
+		Map<String, String> attributes = attrAdapter.getAttributes(auth.getName(), req);
+		List<Attribute> list = extractAttributes(auth, attributes);
+		
 		List<User> users = service.getUsersByAttributes(list);
 		if (users == null)
-			users = new ArrayList();
+			users = new ArrayList<User>();
 		if (users.size() > 1) {
-			throw new IllegalArgumentException(
-					"The request attributes identify more than one user");
+			throw new IllegalArgumentException("The request attributes identify more than one user");
 		}
 		list.clear();
-		for (String key : attributes.keySet()) {
-			String value = attributes.get(key);
-			Attribute attr = new Attribute();
-			attr.setAuthority(auth);
-			attr.setKey(key);
-			attr.setValue(value);
-			list.add(attr);
-		}
+		populateAttributes(auth, attributes, list);
+		
 		String token = null;
 		Long expirationDate = null;
 
 		// add security whitelist
-		if (!secAdapter.access(auth.getName(),
-				new ArrayList<String>(attributes.keySet()), attributes)) {
+		if (!secAdapter.access(auth.getName(), new ArrayList<String>(attributes.keySet()), attributes)) {
 			throw new SecurityException("Access denied to user");
 		}
 
 		if (users.isEmpty()) {
 			token = service.generateAuthToken();
-			User user = service.createUser(token, System.currentTimeMillis()
-					+ TOKEN_DEADLINE, list);
+			User user = service.createUser(token, System.currentTimeMillis() + TOKEN_DEADLINE, list);
 			traceUserLogger.info(user.getId() + "," + token);
 		} else {
 			User user = users.get(0);
@@ -168,12 +144,91 @@ public class AcServiceAdapter {
 		return token;
 	}
 
+	/*
+	 * promote user from anonymous account to other authority
+	 */
+	public String promoteUser(String authorityUrl, String authToken, HttpServletRequest req) throws AcServiceException {
+		Authority auth = service.getAuthorityByUrl(authorityUrl);
+		if (auth == null) {
+			throw new IllegalArgumentException("Unknown authority URL: " + authorityUrl);
+		}
+
+		Map<String, String> attributes = attrAdapter.getAttributes(auth.getName(), req);
+		List<Attribute> list = extractAttributes(auth, attributes);
+
+		List<User> users = service.getUsersByAttributes(list);
+		list.clear();
+
+		User user = service.getUserByToken(authToken);
+		if (user == null) {
+			throw new IllegalArgumentException("The user with token " + authToken + " does not exist.");
+		}
+
+		if (users == null || users.isEmpty()) {
+			// no Google account exists, update anonymous account to google
+			// do nothing for the moment
+		} else if (users.size() == 1) {
+			// already have Google account: switch to this account
+			user = users.get(0);
+		} else {
+			throw new IllegalArgumentException("The request attributes identify more than one user");
+		}
+
+		populateAttributes(auth, attributes, list);
+		String token = null;
+		Long expirationDate = null;
+
+		// add security whitelist
+		if (!secAdapter.access(auth.getName(), new ArrayList<String>(attributes.keySet()), attributes)) {
+			throw new SecurityException("Access denied to user");
+		}
+
+		if (service.isValidUser(user.getAuthToken())) {
+			token = user.getAuthToken();
+			expirationDate = user.getExpTime();
+		} else {
+			token = service.generateAuthToken();
+			expirationDate = System.currentTimeMillis() + TOKEN_DEADLINE;
+			traceUserLogger.info(user.getId() + "," + token);
+		}
+		service.updateUser(user.getId(), token, expirationDate, list);
+		return token;
+	}
+
+	private void populateAttributes(Authority auth, Map<String, String> attributes, List<Attribute> list) {
+		for (String key : attributes.keySet()) {
+			String value = attributes.get(key);
+			Attribute attr = new Attribute();
+			attr.setAuthority(auth);
+			attr.setKey(key);
+			attr.setValue(value);
+			list.add(attr);
+		}
+	}
+
+	private List<Attribute> extractAttributes(Authority auth, Map<String, String> attributes) {
+		List<String> ids = attrAdapter.getIdentifyingAttributes(auth.getName());
+
+		// Try to find an already existing user
+		List<Attribute> list = new ArrayList<Attribute>();
+		for (String key : ids) {
+			if (!attributes.containsKey(key)) {
+				throw new IllegalArgumentException("The required attribute is missing: " + key);
+			}
+			Attribute a = new Attribute();
+			a.setAuthority(auth);
+			a.setKey(key);
+			a.setValue(attributes.get(key));
+			list.add(a);
+		}
+		return list;
+	}
+
 	public boolean deleteToken(String token) throws AcServiceException {
 		return service.removeUser(token);
 	}
 
-	protected Authority getAuthorityByName(String name)
-			throws AcServiceException {
+	protected Authority getAuthorityByName(String name) throws AcServiceException {
 		return service.getAuthorityByName(name);
 	}
 
@@ -187,5 +242,21 @@ public class AcServiceAdapter {
 
 	protected Collection<Authority> getAuthorities() throws AcServiceException {
 		return service.getAuthorities();
+	}
+
+	public User getUser(String token) throws AcServiceException {
+		return service.getUserByToken(token);
+	}
+
+	public User getUserForSession(String token) throws AcServiceException {
+		User user = getUser(token);
+		if (user != null) {
+			long expTime = System.currentTimeMillis() + SESSION_TOKEN_DEADLINE;
+			String sessionToken = service.createSessionToken(user.getId(), expTime);
+			user.setExpTime(expTime);
+			user.setAuthToken(sessionToken);
+			return user;
+		}
+		return null;
 	}
 }
