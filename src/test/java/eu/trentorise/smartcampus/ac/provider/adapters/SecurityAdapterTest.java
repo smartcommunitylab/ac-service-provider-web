@@ -16,6 +16,8 @@
 
 package eu.trentorise.smartcampus.ac.provider.adapters;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,13 +32,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class SecurityAdapterTest {
 
 	private static SecurityAdapter security;
+	private static AttributesAdapter attrs;
 
 	@BeforeClass
-	public static void setup() throws IOException {
+	public static void setup() throws Exception {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
 				"spring/applicationContext.xml");
 		security = ctx.getBean(SecurityAdapter.class);
 		security.init();
+		attrs = ctx.getBean(AttributesAdapter.class);
+		attrs.init();
 	}
 
 	@Test
@@ -68,7 +73,7 @@ public class SecurityAdapterTest {
 
 		userAttrs.put("eu.trentorise.smartcampus.givenname", "sc");
 		userAttrs.put("eu.trentorise.smartcampus.surname", "user");
-		Assert.assertTrue(security.access("fbk", Arrays.asList("epnn-fake"),
+		Assert.assertFalse(security.access("fbk", Arrays.asList("epnn-fake"),
 				userAttrs));
 	}
 
@@ -92,4 +97,26 @@ public class SecurityAdapterTest {
 				userAttrs));
 	}
 
+	@Test
+	public void testFull() throws IOException {
+		BufferedReader bis = null;
+		try {
+			bis = new BufferedReader(new FileReader("src/test/resources/whitelist"));
+			String line = null;
+			while ((line=bis.readLine()) != null) {
+				if (line.trim().length()==0 || line.startsWith("#")) continue;
+				Map<String, String> userAttrs = new HashMap<String, String>();
+				String[] elems = line.split(",");
+				String auth = elems[0].trim();
+				userAttrs.put("eu.trentorise.smartcampus.givenname",elems[1].trim());
+				userAttrs.put("eu.trentorise.smartcampus.surname", elems[2].trim());
+				if (elems.length > 3) {
+					userAttrs.put(elems[3].trim(), elems[4].trim());
+				}
+				Assert.assertTrue(security.access(auth, attrs.getIdentifyingAttributes(auth),userAttrs));
+			}
+		} finally {
+			if (bis != null) bis.close();
+		}
+	}
 }

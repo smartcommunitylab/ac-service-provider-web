@@ -62,4 +62,13 @@ public class SecurityEntry {
 		this.idSecurityEntries = idSecurityEntries;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "SecurityEntry [nameValue=" + nameValue + ", surnameValue="
+				+ surnameValue + ", idSecurityEntries=" + idSecurityEntries
+				+ "]";
+	}
 }

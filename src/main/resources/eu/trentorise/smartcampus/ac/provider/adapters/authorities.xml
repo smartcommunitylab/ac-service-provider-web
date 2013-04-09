@@ -30,11 +30,14 @@
 		<attributes alias="eu.trentorise.smartcampus.surname">sn</attributes>
 		<identifyingAttributes>eppn</identifyingAttributes>
 	</authorityMapping>
+<!--  UNCOMMENT THE FOLLOWING TO ENABLE GOOGLE ACCOUNT -->
 <!--     <authorityMapping name="google" url="google" useParams="true"> -->
 <!--         <attributes alias="eu.trentorise.smartcampus.givenname">openid.ext1.value.name</attributes> -->
 <!--         <attributes alias="eu.trentorise.smartcampus.surname">openid.ext1.value.surname</attributes> -->
 <!--         <identifyingAttributes>openid.ext1.value.email</identifyingAttributes> -->
 <!--     </authorityMapping> -->
+    
+<!--  UNCOMMENT THE FOLLOWING TO ENABLE ANONYMOUS ACCOUNT -->
 <!--     <authorityMapping name="anonymous" url="anonymous" useParams="true"> -->
 <!--         <identifyingAttributes>externalId</identifyingAttributes> -->
 <!--     </authorityMapping> -->

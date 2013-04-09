@@ -20,16 +20,15 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +49,8 @@ public class SecurityAdapter {
 	@Autowired
 	AttributesAdapter attrAdapter;
 	private static Map<String, List<SecurityEntry>> securityMap;
+	@Value("${ac.whitelist.file}")
+	private String whiteListFile;
 
 	/**
 	 * The methods reads at scheduled time authorities white-list files
@@ -65,39 +66,47 @@ public class SecurityAdapter {
 		} else {
 			securityMap.clear();
 		}
-		Set<String> authNames = attrAdapter.getAuthorityUrls().keySet();
-		for (String authName : authNames) {
-			List<SecurityEntry> securityEntries = new ArrayList<SecurityEntry>();
-			URL fileUrl = getClass().getClassLoader().getResource(
-					authName + "-whitelist.txt");
-			if (fileUrl != null) {
-				BufferedReader bin = new BufferedReader(new InputStreamReader(
-						new FileInputStream(fileUrl.getFile())));
-				String line = null;
-				while ((line = bin.readLine()) != null) {
-					line = line.trim();
-					// bypass comment lines or empty lines
-					if (line.length() == 0 || line.startsWith("#")) {
-						continue;
-					}
-					String[] token = line.split(",");
-					SecurityEntry se = new SecurityEntry();
-					se.setNameValue(token[0].trim());
-					se.setSurnameValue(token[1].trim());
-					if (token.length > 2) {
-						String[] idNames = token[2].split("\\|");
-						String[] idValues = token[3].split("\\|");
-						for (int i = 0; i < idNames.length; i++) {
-							se.addIdSecurityEntry(idNames[i].trim(),
-									idValues[i].trim());
-						}
-					}
-					securityEntries.add(se);
+		BufferedReader bin = null;
+		try {
+			bin = new BufferedReader(new InputStreamReader(new FileInputStream(whiteListFile)));
+			String line = null;
+			while ((line = bin.readLine()) != null) {
+				line = line.trim();
+				// bypass comment lines or empty lines
+				if (line.length() == 0 || line.startsWith("#")) {
+					continue;
 				}
-				securityMap.put(authName, securityEntries);
-				bin.close();
+				String[] token = line.split(",");
+				String authority = token[0].trim();
+				List<SecurityEntry> securityEntries = securityMap.get(authority);
+				if (securityEntries == null) {
+					securityEntries = new ArrayList<SecurityEntry>();
+					securityMap.put(authority, securityEntries);
+				}
+				
+				SecurityEntry se = new SecurityEntry();
+				se.setNameValue(token[1].trim());
+				se.setSurnameValue(token[2].trim());
+				if (token.length > 3) {
+					String[] idNames = token[3].split("\\|");
+					String[] idValues = token[4].split("\\|");
+					for (int i = 0; i < idNames.length; i++) {
+						se.addIdSecurityEntry(idNames[i].trim(),
+								idValues[i].trim());
+					}
+				}
+				securityEntries.add(se);
+			}
+		} finally {
+			if (bin != null) bin.close();
+		}
+
+		for (String auth: attrAdapter.getAuthorityUrls().keySet()) {
+			if (securityMap.get(auth) != null && securityMap.get(auth).isEmpty()) {
+				securityMap.remove(auth);
 			}
 		}
+		
 		logger.info("Security list refreshed");
 	}
 
@@ -125,60 +134,55 @@ public class SecurityAdapter {
 			Map<String, String> attrs) {
 		List<SecurityEntry> securityList = securityMap.get(authName);
 
-		boolean idAttrCheck = false;
-		boolean nameCheck = false;
 		if (securityList != null) {
 			for (SecurityEntry se : securityList) {
-				// check for name and surname
-				if (!nameCheck) {
-					try {
-						nameCheck |= attrs.get(NAME_ATTR).equals(
-								se.getNameValue())
-								&& attrs.get(SURNAME_ATTR).equals(
-										se.getSurnameValue());
-					} catch (NullPointerException e) {
-						nameCheck = false;
-					}
-				}
-
 				// check id attrs
-
-				// security entry MUST contain only valid key attribute
-				boolean access = !Collections.disjoint(checkAttrs, se
-						.getIdSecurityEntries().keySet());
-				if (!idAttrCheck && !se.getIdSecurityEntries().isEmpty()) {
+				if (!se.getIdSecurityEntries().isEmpty()) {
+					// security entry MUST contain only valid key attribute
+					if (Collections.disjoint(checkAttrs, se.getIdSecurityEntries().keySet())) {
+						continue;
+					}
+					boolean valid = true;
 					for (String idAttr : checkAttrs) {
 						try {
-							if (se.getIdSecurityEntries().get(idAttr) != null) {
-								access &= attrs.get(idAttr).equals(
-										se.getIdSecurityEntries().get(idAttr));
+							if (se.getIdSecurityEntries().get(idAttr) != null &&
+								!attrs.get(idAttr).equals(se.getIdSecurityEntries().get(idAttr))) 
+							{
+								valid = false;
+								break;
 							}
 						} catch (NullPointerException e) {
-							access = false;
-						}
-						if (!access) {
+							valid = false;
 							break;
 						}
 					}
-					idAttrCheck = access;
+					if (!valid) continue;
+					return true;
 				}
-
-				if (idAttrCheck) {
-					break;
+				// check for name and surname
+				try {
+					if (!(attrs.get(NAME_ATTR).equals(se.getNameValue()) && 
+						  attrs.get(SURNAME_ATTR).equals(se.getSurnameValue()))) 
+					{
+						continue;
+					}
+				} catch (NullPointerException e) {
+					continue;
 				}
+				return true;
 			}
 		} else {
 			return true;
 		}
-		if (!(idAttrCheck || nameCheck)) {
-			String attrValues = "";
-			for (String attrKey : checkAttrs) {
-				attrValues += attrKey + " -> " + attrs.get(attrKey) + " ";
-			}
-			logger.warn("Authentication failed. User: givenname -> "
-					+ attrs.get(NAME_ATTR) + " surname -> "
-					+ attrs.get(SURNAME_ATTR) + " " + attrValues);
+		String attrValues = "";
+		for (String attrKey : checkAttrs) {
+			attrValues += attrKey + " -> " + attrs.get(attrKey) + " ";
 		}
-		return idAttrCheck || nameCheck;
+		logger.warn("Authentication failed. User: givenname -> "
+				+ attrs.get(NAME_ATTR) + " surname -> "
+				+ attrs.get(SURNAME_ATTR) + " " + attrValues);
+		return false;
 	}
+	
+	
 }
