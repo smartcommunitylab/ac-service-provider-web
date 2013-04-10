@@ -178,7 +178,7 @@ public class SecurityAdapter {
 		for (String attrKey : checkAttrs) {
 			attrValues += attrKey + " -> " + attrs.get(attrKey) + " ";
 		}
-		logger.warn("Authentication failed. User: givenname -> "
+		logger.error("Authentication failed. User: givenname -> "
 				+ attrs.get(NAME_ATTR) + " surname -> "
 				+ attrs.get(SURNAME_ATTR) + " " + attrValues);
 		return false;
