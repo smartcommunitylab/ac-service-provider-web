@@ -119,7 +119,8 @@ public class AcSpWeb {
 	public String showAuthorities(
 			Model model,
 			HttpServletRequest request,
-			@RequestParam(value = "redirect", required = false) String redirect)
+			@RequestParam(value = "redirect", required = false) String redirect,
+			@RequestParam(value = "oldToken", required = false) String oldToken)
 			throws ValidationException, IntrusionException, ScanException,
 			PolicyException {
 		// FOR TESTING PURPOSES
@@ -138,6 +139,7 @@ public class AcSpWeb {
 		} else {
 			model.addAttribute("redirect", "");
 		}
+		request.getSession().setAttribute("oldToken", oldToken);
 		return "authorities";
 	}
 
@@ -189,7 +191,8 @@ public class AcSpWeb {
 			HttpServletRequest request,
 			HttpServletResponse response,
 			@PathVariable("authorityUrl") String authorityUrl,
-			@RequestParam(value = "redirect", required = false) String redirect)
+			@RequestParam(value = "redirect", required = false) String redirect,
+			@RequestParam(value = "oldToken", required = false) String oldToken)
 			throws AcServiceException, IOException {
 		// FOR TESTING PURPOSES
 		if (request.getParameter("TESTING") != null
@@ -222,9 +225,15 @@ public class AcSpWeb {
 			target = redirect;
 		}
 		
+		if (oldToken == null) oldToken = (String)request.getSession().getAttribute("oldToken");
+		
 		String token = "";
 		try {
-			token = service.updateUser(authorityUrl, request);
+			if (oldToken == null) {
+				token = service.updateUser(authorityUrl, request);
+			} else {
+				token = service.promoteUser(authorityUrl, oldToken, request);
+			}
 			String code = codeRepository.generateAccessCode(token);
 			return "redirect:" + target + "#" + code;
 		} catch (SecurityException e) {
