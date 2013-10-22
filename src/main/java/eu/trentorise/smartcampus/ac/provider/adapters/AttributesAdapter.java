@@ -42,6 +42,7 @@ import eu.trentorise.smartcampus.ac.provider.jaxbmodel.Authorities;
 import eu.trentorise.smartcampus.ac.provider.jaxbmodel.AuthorityMapping;
 import eu.trentorise.smartcampus.ac.provider.model.Attribute;
 import eu.trentorise.smartcampus.ac.provider.model.Authority;
+import eu.trentorise.smartcampus.ac.provider.utils.Utils;
 
 /**
  * This class manages all operations on attributes
@@ -102,21 +103,37 @@ public class AttributesAdapter {
 					+ authority);
 		}
 		Map<String, String> attrs = new HashMap<String, String>();
-		for (String key : mapping.getIdentifyingAttributes()) {
-			Object value = readAttribute(request, key, mapping.isUseParams());
-			if (value != null) {
-				attrs.put(key, value.toString());
+		if ("google".equals(authority) && request.getParameter("token") != null) {
+			String token = request.getParameter("token");
+			Map<String,Object> map = Utils.getUserFromGoogle(token);
+			if (map != null) {
+				String value = (String)map.get("given_name");
+				if (value != null) attrs.put("eu.trentorise.smartcampus.givenname", value);
+				value = (String)map.get("family_name");
+				if (value != null) attrs.put("eu.trentorise.smartcampus.surname", value);
+				if (map.containsKey("email")) attrs.put("openid.ext1.value.email", (String)map.get("email"));
+				else attrs.put("openid.ext1.value.email", (String)map.get("sub"));
+				if (attrs.get("openid.ext1.value.email") == null) attrs.clear();
+			}
+			
+		} else {
+			for (String key : mapping.getIdentifyingAttributes()) {
+				Object value = readAttribute(request, key, mapping.isUseParams());
+				if (value != null) {
+					attrs.put(key, value.toString());
+				}
+			}
+			for (Attributes attribute : mapping.getAttributes()) {
+				// used alias if present to set attribute in map
+				String key = (attribute.getAlias() != null && !attribute.getAlias()
+						.isEmpty()) ? attribute.getAlias() : attribute.getValue();
+				Object value = readAttribute(request,attribute.getValue(), mapping.isUseParams());
+				if (value != null) {
+					attrs.put(key, value.toString());
+				}
 			}
 		}
-		for (Attributes attribute : mapping.getAttributes()) {
-			// used alias if present to set attribute in map
-			String key = (attribute.getAlias() != null && !attribute.getAlias()
-					.isEmpty()) ? attribute.getAlias() : attribute.getValue();
-			Object value = readAttribute(request,attribute.getValue(), mapping.isUseParams());
-			if (value != null) {
-				attrs.put(key, value.toString());
-			}
-		}
+		
 		return attrs;
 	}
 

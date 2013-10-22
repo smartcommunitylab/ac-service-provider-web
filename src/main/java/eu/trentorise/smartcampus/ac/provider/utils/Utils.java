@@ -16,11 +16,26 @@
 
 package eu.trentorise.smartcampus.ac.provider.utils;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.ws.rs.core.MediaType;
 
+import org.apache.cxf.endpoint.Client;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.ParseException;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.owasp.esapi.ESAPI;
 import org.owasp.esapi.Encoder;
 import org.owasp.esapi.errors.IntrusionException;
@@ -79,5 +94,23 @@ public class Utils {
 
 	public String retrieveDomain(URL url) {
 		return url.getHost();
+	}
+
+	public static Map<String,Object> getUserFromGoogle(String token) {
+		HttpClient client = new DefaultHttpClient();
+		final HttpGet get = new HttpGet("https://www.googleapis.com/oauth2/v3/userinfo");
+		get.setHeader("Accept", "application/json");
+		get.setHeader("Authorization", "Bearer "+token);
+
+		try {
+			HttpResponse resp = client.execute(get);
+			String response = EntityUtils.toString(resp.getEntity(),"UTF-8");
+			if (resp.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+				return new ObjectMapper().readValue(response, Map.class);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

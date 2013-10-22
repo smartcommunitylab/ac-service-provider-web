@@ -228,11 +228,12 @@ public class AcSpWeb {
 		if (oldToken == null) oldToken = (String)request.getSession().getAttribute("oldToken");
 		
 		String token = "";
+		String resultAuthorityUrl = "googleext".equals(authorityUrl) ? "google" : authorityUrl;
 		try {
 			if (oldToken == null) {
-				token = service.updateUser(authorityUrl, request);
+				token = service.updateUser(resultAuthorityUrl, request);
 			} else {
-				token = service.promoteUser(authorityUrl, oldToken, request);
+				token = service.promoteUser(resultAuthorityUrl, oldToken, request);
 			}
 			String code = codeRepository.generateAccessCode(token);
 			return "redirect:" + target + "#" + code;
